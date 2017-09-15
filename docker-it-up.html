@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>RivenLogik - Rivenlogik</title>
+    <title>Docker it up</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="rivenlogik">
@@ -70,7 +70,7 @@
 						<i class="icon-folder-open icon-large"></i>Beer
 					</a>
                   </li>
-                  <li >
+                  <li class="active">
                     <a href="/category/devops.html">
 						<i class="icon-folder-open icon-large"></i>DevOps
 					</a>
@@ -95,9 +95,20 @@
     <div class="container-fluid">
       <div class="row">
         <div class="span9" id="content">
-        <div class="article">
-                <h1><a href="/docker-it-up.html">Docker it up</a></h1>
-                <div class="well small"><footer class="post-info">
+<section id="content">
+        <article>
+                <header>
+                        <h1>
+                                <a href=""
+                                        rel="bookmark"
+                                        title="Permalink to Docker it up">
+                                        Docker it up
+                                </a>
+                        </h1>
+                </header>
+                <div class="entry-content">
+                <div class="well">
+<footer class="post-info">
 <span class="label">Date</span>
 <abbr class="published" title="2017-09-14T23:00:00-05:00">
         <i class="icon-calendar"></i>Thu 14 September 2017
@@ -110,81 +121,56 @@
 
 <span class="label">Tags</span>
 	<a href="/tag/devops.html"><i class="icon-tag"></i>DevOps</a>
-</footer><!-- /.post-info --></div>
-                <div class="summary"><p>Yo dawg, I heard you like containers...</p>
-                        <a class="btn primary xsmall" href="/docker-it-up.html">more ...</a>
-                </div>
-        </div>
-        <hr />
-        <div class="article">
-                <h1><a href="/brewing-101.html">Brewing 101</a></h1>
-                <div class="well small"><footer class="post-info">
-<span class="label">Date</span>
-<abbr class="published" title="2017-08-30T20:30:00-05:00">
-        <i class="icon-calendar"></i>Wed 30 August 2017
-</abbr>
-<span class="label">By</span>
-<a href="/author/rivenlogik.html"><i class="icon-user"></i>Rivenlogik</a>
-<span class="label">Category</span>
-<a href="/category/beer.html"><i class="icon-folder-open"></i>Beer</a>.
-
-
-<span class="label">Tags</span>
-	<a href="/tag/lab.html"><i class="icon-tag"></i>Lab</a>
-	<a href="/tag/beer.html"><i class="icon-tag"></i>Beer</a>
-</footer><!-- /.post-info --></div>
-                <div class="summary"><p>RIP Laptop, Brewing class notes</p>
-                        <a class="btn primary xsmall" href="/brewing-101.html">more ...</a>
-                </div>
-        </div>
-        <hr />
-        <div class="article">
-                <h1><a href="/becoming-a-metaphysician.html">Becoming a Metaphysician</a></h1>
-                <div class="well small"><footer class="post-info">
-<span class="label">Date</span>
-<abbr class="published" title="2017-08-16T23:40:00-05:00">
-        <i class="icon-calendar"></i>Wed 16 August 2017
-</abbr>
-<span class="label">By</span>
-<a href="/author/rivenlogik.html"><i class="icon-user"></i>Rivenlogik</a>
-<span class="label">Category</span>
-<a href="/category/metal.html"><i class="icon-folder-open"></i>Metal</a>.
-
-
-<span class="label">Tags</span>
-	<a href="/tag/metal.html"><i class="icon-tag"></i>metal</a>
-</footer><!-- /.post-info --></div>
-                <div class="summary"><p>If only I had the time...</p>
-                        <a class="btn primary xsmall" href="/becoming-a-metaphysician.html">more ...</a>
-                </div>
-        </div>
-        <hr />
-        <div class="article">
-                <h1><a href="/the-genesis.html">The Genesis</a></h1>
-                <div class="well small"><footer class="post-info">
-<span class="label">Date</span>
-<abbr class="published" title="2017-08-01T22:00:00-05:00">
-        <i class="icon-calendar"></i>Tue 01 August 2017
-</abbr>
-<span class="label">By</span>
-<a href="/author/rivenlogik.html"><i class="icon-user"></i>Rivenlogik</a>
-<span class="label">Category</span>
-<a href="/category/metal.html"><i class="icon-folder-open"></i>Metal</a>.
-
-
-<span class="label">Tags</span>
-	<a href="/tag/metal.html"><i class="icon-tag"></i>metal</a>
-</footer><!-- /.post-info --></div>
-                <div class="summary"><p>Finding inspiration in metal and code</p>
-                        <a class="btn primary xsmall" href="/the-genesis.html">more ...</a>
-                </div>
-        </div>
-        <hr />
-
-                <section id="content" class="body">
-                <h1>Pages</h1>
-                        <li><a href="/pages/about.html">About</a></li>
-                </section>
+</footer><!-- /.post-info -->                </div>
+                <h1>Docker Notes</h1>
+<h2>Reference</h2>
+<p><a href="https://docs.docker.com/get-started/">Get Started</a><br>
+I spent a couple days going over the basics of Docker.. just wanted to summarize what I've learned.  I should probably just invest my time in EverNote instead of typing up these markdown pages.  But honestly, challenge accepted.</p>
+<h2>Terms</h2>
+<p><strong>Image</strong> - A read-only package that is housed within a container<br>
+<strong>Container</strong> - This is a runtime of images defined by a <em>Dockerfile</em>. I don't know what all goes in this yet but it seems to define what directories exist and what ports to open up from the container to the host.  More TBD.<br>
+<strong>Service</strong> - Scaling and load balancing.  This is where you define what service a container will function as (ie. web) and define parameters like how many container replicas.<br>
+<strong>Replica</strong> - Basically a container instance on a single host machine running docker engine.<br>
+<strong>Swarm</strong> - When you begin clustering multiple docker hosts (with their own docker engines running) then these are called swarms.  Apps can quickly be deployed to swarms configured to talk to each other. <br>
+<strong>Node</strong> - A single docker host in a swarm.<br>
+<strong>Stack</strong> - The docker compose basically defines this.  It can consist of different services that deploy containers (ie. web, db, etc.)  </p>
+<p>Note to self - learn YAML.  </p>
+<h2>Commands</h2>
+<h3>General</h3>
+<p><code>docker container ls</code> - list containers on a host<br>
+<code>docker service ls</code> - list services on a host<br>
+<code>docker service ps &lt;service&gt;</code> - show tasks spawned by a service (services run tasks, tasks then spawn containers)  </p>
+<h3>Swarm Manager</h3>
+<p><code>docker node ls</code> - list nodes in a swarm (swarm manager command)<br>
+<code>docker stack deploy -c &lt;yaml file&gt; &lt;name&gt;</code> - Deploy an app to a swarm<br>
+<code>docker stack rm &lt;name&gt;</code> - Undeploy an app from a swarm<br>
+<code>docker swarm init</code> - initialize a swarm manager<br>
+<code>docker swarm join --token &lt;blah&gt; ...</code> - look for this command when performing a swarm init to join nodes to the swarm<br>
+<code>docker swarm leave (--force)</code> - have a node leave a swarm  </p>
+<h2>Other observations</h2>
+<h3>Docker machine</h3>
+<ul>
+<li>Used for managing docker engine node machines</li>
+<li>Controls local virtual machines and can utilize virtualbox/hyperv/etc.</li>
+<li>Seems like local virtual machines with multiple docker container could potentially be a good localized development environment?</li>
+</ul>
+<h3>Docker compose files</h3>
+<ul>
+<li>docker-compose is needed (I believe) for compose YAML files to work</li>
+<li>replicas define the number of containers for a given service on a swarm.  This means "5" could be 2 on one node, 3 on another in a 2 node swarm.</li>
+<li>overlay networks seem to be distributed networks, or like distributed switches in vmware.  <em>More TBD here.</em></li>
+<li>ports define how to map container ports for a service to the actual host ports that can be connected to</li>
+<li>volumes are used to define common "source of truth" directories for persisting data. <em>More TBD here.</em></li>
+<li>placement constraints can limit where a particular service is deployed (ie. only node1, not node2, this or that.. blah blah)</li>
+</ul>
+<hr>
+<h3>Music</h3>
+<p>Per usual, spinning music is constant for me.<br>
+I've always been a pretty big fan of Neurosis.  This is Steve Von Till's personal project, and I highly recommend zoning out to it (especially <em>White Horse</em>).
+<iframe style="border: 0; width: 350px; height: 470px;" src="https://bandcamp.com/EmbeddedPlayer/album=213854351/size=large/bgcol=333333/linkcol=ffffff/tracklist=false/transparent=true/" seamless><a href="http://harvestman.bandcamp.com/album/music-for-megaliths">Music For Megaliths by Harvestman</a></iframe>   </p>
+                </div><!-- /.entry-content -->
+        </article>
+</section>
         </div><!--/span-->
 
                 <div class="span3 well sidebar-nav" id="sidebar">
