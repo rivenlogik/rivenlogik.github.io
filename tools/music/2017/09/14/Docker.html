@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<title>Docker it up | Active Denial System</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Docker Notes Reference Get Started I spent a couple days going over the basics of Docker.. just wanted to summarize what I’ve learned. I should probably just...">
+<meta name="author" content="wittr">
+<meta name="generator" content="Jekyll v4.1.1">
+<link rel="canonical" href="http://localhost:4000/tools/music/2017/09/14/Docker.html">
+
+<link rel="stylesheet" href="/assets/css/index.css">
+
+<link rel="stylesheet" href="/assets/css/classes.css">
+
+<link rel="alternate" href="/feed.xml" type="application/atom+xml" title="Active Denial System">
+
+
+
+
+<header class="icons">
+  
+    <a href="/" class="title">Active Denial System</a>
+  
+  
+    
+  <nav>
+  <a aria-label="Home" href="/" ><span aria-hidden="true" >Home</span></a>
+  <a aria-label="About" href="/about/" ><span aria-hidden="true" >About</span></a>
+  <a aria-label="Subjects" href="/subjects/" ><span aria-hidden="true" >Subjects</span></a>
+  <a aria-label="Archive" href="/archive/" ><span aria-hidden="true" >Archive</span></a>
+  
+  </nav>
+
+
+    
+  <nav>
+  <a aria-label="Twitter" href="https://twitter.com/rivenlogik" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#twitter"></use></svg></a>
+  <a aria-label="Github" href="https://github.com/rivenlogik" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#github"></use></svg></a>
+  <a aria-label="HackTheBox" href="https://www.hackthebox.eu/home/users/profile/33864" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#cube"></use></svg></a>
+  <a aria-label="Subscribe" href="/feed.xml" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#rss"></use></svg></a>
+  
+  </nav>
+
+
+  
+  
+</header>
+
+<article>
+  <header>
+  
+  <div class="categories">
+    
+    FILED UNDER:
+    
+    <a href="/categories/#tools">TOOLS</a>
+    &nbsp;
+    
+    <a href="/categories/#music">MUSIC</a>
+    
+    
+  </div>
+  
+  <h1><a href="/tools/music/2017/09/14/Docker.html">Docker it up</a></h1><time datetime="2017-09-14T00:00:00-05:00">September 14, 2017</time>
+</header>
+
+  <h1 id="docker-notes">Docker Notes</h1>
+<h2 id="reference">Reference</h2>
+<p><a href="https://docs.docker.com/get-started/">Get Started</a><br />
+I spent a couple days going over the basics of Docker.. just wanted to summarize what I’ve learned.  I should probably just invest my time in EverNote instead of typing up these markdown pages.  But honestly, challenge accepted.</p>
+
+<h2 id="terms">Terms</h2>
+<p><strong>Image</strong> - A read-only package that is housed within a container<br />
+<strong>Container</strong> - This is a runtime of images defined by a <em>Dockerfile</em>. I don’t know what all goes in this yet but it seems to define what directories exist and what ports to open up from the container to the host.  More TBD.<br />
+<strong>Service</strong> - Scaling and load balancing.  This is where you define what service a container will function as (ie. web) and define parameters like how many container replicas.<br />
+<strong>Replica</strong> - Basically a container instance on a single host machine running docker engine.<br />
+<strong>Swarm</strong> - When you begin clustering multiple docker hosts (with their own docker engines running) then these are called swarms.  Apps can quickly be deployed to swarms configured to talk to each other. <br />
+<strong>Node</strong> - A single docker host in a swarm.<br />
+<strong>Stack</strong> - The docker compose basically defines this.  It can consist of different services that deploy containers (ie. web, db, etc.)</p>
+
+<p>Note to self - learn YAML.</p>
+
+<h2 id="commands">Commands</h2>
+<h3 id="general">General</h3>
+<p><code class="language-plaintext highlighter-rouge">docker container ls</code> - list containers on a host<br />
+<code class="language-plaintext highlighter-rouge">docker service ls</code> - list services on a host<br />
+<code class="language-plaintext highlighter-rouge">docker service ps &lt;service&gt;</code> - show tasks spawned by a service (services run tasks, tasks then spawn containers)</p>
+
+<h3 id="swarm-manager">Swarm Manager</h3>
+<p><code class="language-plaintext highlighter-rouge">docker node ls</code> - list nodes in a swarm (swarm manager command)<br />
+<code class="language-plaintext highlighter-rouge">docker stack deploy -c &lt;yaml file&gt; &lt;name&gt;</code> - Deploy an app to a swarm<br />
+<code class="language-plaintext highlighter-rouge">docker stack rm &lt;name&gt;</code> - Undeploy an app from a swarm<br />
+<code class="language-plaintext highlighter-rouge">docker swarm init</code> - initialize a swarm manager<br />
+<code class="language-plaintext highlighter-rouge">docker swarm join --token &lt;blah&gt; ...</code> - look for this command when performing a swarm init to join nodes to the swarm<br />
+<code class="language-plaintext highlighter-rouge">docker swarm leave (--force)</code> - have a node leave a swarm</p>
+
+<h2 id="other-observations">Other observations</h2>
+<h3 id="docker-machine">Docker machine</h3>
+<ul>
+  <li>Used for managing docker engine node machines</li>
+  <li>Controls local virtual machines and can utilize virtualbox/hyperv/etc.</li>
+  <li>Seems like local virtual machines with multiple docker container could potentially be a good localized development environment?</li>
+</ul>
+
+<h3 id="docker-compose-files">Docker compose files</h3>
+<ul>
+  <li>docker-compose is needed (I believe) for compose YAML files to work</li>
+  <li>replicas define the number of containers for a given service on a swarm.  This means “5” could be 2 on one node, 3 on another in a 2 node swarm.</li>
+  <li>overlay networks seem to be distributed networks, or like distributed switches in vmware.  <em>More TBD here.</em></li>
+  <li>ports define how to map container ports for a service to the actual host ports that can be connected to</li>
+  <li>volumes are used to define common “source of truth” directories for persisting data. <em>More TBD here.</em></li>
+  <li>placement constraints can limit where a particular service is deployed (ie. only node1, not node2, this or that.. blah blah)</li>
+</ul>
+
+<hr />
+<h3 id="music">Music</h3>
+<p>Per usual, spinning music is constant for me.<br />
+I’ve always been a pretty big fan of Neurosis.  This is Steve Von Till’s personal project, and I highly recommend zoning out to it (especially <em>White Horse</em>).</p>
+<iframe style="border: 0; width: 350px; height: 470px;" src="https://bandcamp.com/EmbeddedPlayer/album=213854351/size=large/bgcol=333333/linkcol=ffffff/tracklist=false/transparent=true/" seamless=""><a href="http://harvestman.bandcamp.com/album/music-for-megaliths">Music For Megaliths by Harvestman</a></iframe>
+<h3 id="white-horse">White Horse</h3>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>The stones call to me, just as they always have.
+A gateway to the mysteries, and a pathway to the ancestors.
+Place my hands in the ashes, dream inside the earth.
+Feel the pulse, the magnetic pull between me and the stone.
+Witness the daystar rising, as Earth's fire rises, 
+up through the spine, filling the heart, 
+exploding the mind, and erupting from the crown of my skull.
+</code></pre></div></div>
+
+  
+</article>
+
+
+  <footer class="related">
+    <div class="previous"><span>Previous Post</span><a href="/beer/2017/08/30/beer101.html">Brewing 101</a></div>
+    <div class="next"><span>Next Post</span><a href="/personal/2020/07/05/begin-again.html">Begin (Yet) Again</a></div>
+  </footer>
+
+
+
+</html>
