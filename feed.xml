@@ -1,4 +1,109 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="en" /><updated>2020-07-14T00:04:17-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Active Denial System</title><subtitle></subtitle><author><name>wittr</name></author><entry><title type="html">HackTheBox - Bashed</title><link href="http://localhost:4000/writeups/2020/07/08/HTB-Bashed.html" rel="alternate" type="text/html" title="HackTheBox - Bashed" /><published>2020-07-08T22:24:00-05:00</published><updated>2020-07-08T22:24:00-05:00</updated><id>http://localhost:4000/writeups/2020/07/08/HTB-Bashed</id><content type="html" xml:base="http://localhost:4000/writeups/2020/07/08/HTB-Bashed.html">&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Bashed/Bashed.png&quot; alt=&quot;Bashed&quot; /&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="en" /><updated>2020-07-14T22:39:05-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Active Denial System</title><subtitle></subtitle><author><name>wittr</name></author><entry><title type="html">HackTheBox - Blocky</title><link href="http://localhost:4000/writeups/todo/2020/07/14/HTB-Blocky.html" rel="alternate" type="text/html" title="HackTheBox - Blocky" /><published>2020-07-14T00:05:00-05:00</published><updated>2020-07-14T00:05:00-05:00</updated><id>http://localhost:4000/writeups/todo/2020/07/14/HTB-Blocky</id><content type="html" xml:base="http://localhost:4000/writeups/todo/2020/07/14/HTB-Blocky.html">&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Blocky/Blocky.png&quot; alt=&quot;Blocky&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;Blocky is a box that is meant to teach bad password practices, decompiling JAR files, and the perils of exposing internal files on public websites.  I first enumerate with nmap to find SSH and HTTP open as well as some other ports that ended up not being paths to follow.  I then enumerated the website’s directories in order to find some java code that exposed credentials.  Those credentials were reused and were used to gain a foothold.  Due to excessive privileges assigned to the normal user, I was able to easily escalate to root immediately after gaining a foothold.&lt;/p&gt;
+
+&lt;h2 id=&quot;walkthrough&quot;&gt;Walkthrough&lt;/h2&gt;
+
+&lt;h3 id=&quot;enumeration&quot;&gt;Enumeration&lt;/h3&gt;
+
+&lt;p&gt;As usual, I started with nmap to scan the machine.  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nmap -A -T4 -v -p1-30000 10.10.10.37&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;PORT      STATE  SERVICE   VERSION  
+21/tcp    open   ftp       ProFTPD 1.3.5a  
+22/tcp    open   ssh       OpenSSH 7.2p2 Ubuntu 4ubuntu2.2 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Ubuntu Linux&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; protocol 2.0&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;  
+80/tcp    open   http      Apache httpd 2.4.18 &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;Ubuntu&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;  
+8192/tcp  closed sophos  
+25565/tcp open   minecraft Minecraft 1.11.2 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Protocol: 127, Message: A Minecraft Server, Users: 0/20&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;FTP doesn’t have anonymous access allowed, so I decided to checkout the webserver.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Blocky/blockycraft.png&quot; alt=&quot;Blockycraft&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;I ran &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gobuster&lt;/code&gt; against the site, looking for subdirectories.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;gobuster &lt;span class=&quot;nb&quot;&gt;dir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-u&lt;/span&gt; http://10.10.10.37 &lt;span class=&quot;nt&quot;&gt;-w&lt;/span&gt; /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+&lt;span class=&quot;o&quot;&gt;===============================================================&lt;/span&gt;
+Gobuster v3.0.1
+by OJ Reeves &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;@TheColonial&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &amp;amp; Christian Mehlmauer &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;@_FireFart_&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;===============================================================&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;+] Url:            http://10.10.10.37
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;+] Threads:        10
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;+] Wordlist:       /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;+] Status codes:   200,204,301,302,307,401,403
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;+] User Agent:     gobuster/3.0.1
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;+] Timeout:        10s
+&lt;span class=&quot;o&quot;&gt;===============================================================&lt;/span&gt;
+2020/07/13 22:11:18 Starting gobuster
+&lt;span class=&quot;o&quot;&gt;===============================================================&lt;/span&gt;
+/wiki &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Status: 301&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+/wp-content &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Status: 301&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+/plugins &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Status: 301&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+/wp-includes &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Status: 301&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+/javascript &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Status: 301&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+/wp-admin &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Status: 301&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+/phpmyadmin &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;Status: 301&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;At about 40% I decided to stop the scan and look at what I found so far.  In particular &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/plugins&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/phpmyadmin&lt;/code&gt; caught my eye. Attempting defaults root/password or root/null on PHPMyAdmin did nothing so I looked at plugins instead.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/plugins&lt;/code&gt; page had a couple jar files listed that I could download.&lt;/p&gt;
+
+&lt;p&gt;I ran &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strings&lt;/code&gt; against the jar files quick and found one of them seemed to have references to “my first plugin” so I figured this is the interesting one.&lt;/p&gt;
+
+&lt;p&gt;I unzipped the jar file and went to open the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;com/myfirstplugin/BlockyCore.class&lt;/code&gt; file.  It was clearly not plaintext so I ran &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strings BlockyCore.class&lt;/code&gt; and noticed a root user followed by its password on the next line:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;--snipped--&lt;/span&gt;
+&amp;lt;init&amp;gt;
+Code
+        localhost
+root
+8YsqfCTnvxAUeduzjNSXe22 
+LineNumberTable
+LocalVariableTable
+&lt;span class=&quot;nt&quot;&gt;--snipped--&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I went back to the PHPMyAdmin console and saw the username / password combo worked.  However, I like to double check my path with the official walkthroughs of HTB because time is limited for me. I noticed it alludes to using JD-GUI to decompile the plugin. So I decided to try this out and get the experience since I haven’t done it before.&lt;/p&gt;
+
+&lt;p&gt;On my Kali box I looked for JD-GUI but didn’t see it.  I did see &lt;a href=&quot;https://github.com/skylot/jadx&quot;&gt;JaDx-GUI&lt;/a&gt; available so I opened that and opened the jar file.  Sure enough the credentials are hard-coded.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Blocky/blockyjar.png&quot; alt=&quot;blockyjar&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;After looking at the PHPMyAdmin console for a bit I saw there was a wordpress user named &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;notch&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Blocky/wpusers.png&quot; alt=&quot;wordpress&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;foothold&quot;&gt;Foothold&lt;/h3&gt;
+
+&lt;p&gt;I couldn’t find any clear path to Foothold with an exploit etc. so I decided to take another peak at the official walkthrough.  It looked like there was a complex path (marked &lt;strong&gt;todo&lt;/strong&gt; for later) that involved PHPMyAdmin and an easier path.  Cue the facepalm, as I forgot to try the credentials on the other services I found earlier with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nmap&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;I logged into the box via SSH with the username &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;notch&lt;/code&gt; I found above in Wordpress users, using the same password found from the jar file.&lt;/p&gt;
+
+&lt;h3 id=&quot;user&quot;&gt;User&lt;/h3&gt;
+
+&lt;p&gt;I didn’t need to pivot to any other user, so I just grabbed the user.txt string from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/home/notch&lt;/code&gt; and started enumerating.  I &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;scp&lt;/code&gt;‘d over an enumeration script and ran it (LinEnum) but honestly, it wasn’t needed.  I ran &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sudo -l&lt;/code&gt; and noticed I had access to ALL commands.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;notch@Blocky:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; password &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;notch: 
+Matching Defaults entries &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;notch on Blocky:
+    env_reset, mail_badpass, &lt;span class=&quot;nv&quot;&gt;secure_path&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/local/sbin&lt;span class=&quot;se&quot;&gt;\:&lt;/span&gt;/usr/local/bin&lt;span class=&quot;se&quot;&gt;\:&lt;/span&gt;/usr/sbin&lt;span class=&quot;se&quot;&gt;\:&lt;/span&gt;/usr/bin&lt;span class=&quot;se&quot;&gt;\:&lt;/span&gt;/sbin&lt;span class=&quot;se&quot;&gt;\:&lt;/span&gt;/bin&lt;span class=&quot;se&quot;&gt;\:&lt;/span&gt;/snap/bin
+
+User notch may run the following commands on Blocky:
+    &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;ALL : ALL&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; ALL
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;root&quot;&gt;Root&lt;/h3&gt;
+
+&lt;p&gt;Given that notch is essentially an administrator, I just ran &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sudo -i&lt;/code&gt; and got a root shell, then went and grabbed the root.txt.&lt;/p&gt;
+
+&lt;h3 id=&quot;lessons-learned&quot;&gt;Lessons Learned&lt;/h3&gt;
+
+&lt;p&gt;The main thing I learned on this box was a different way of accessing jar files using tools that decompile them.  In this case, &lt;em&gt;JaDx-GUI&lt;/em&gt;.  Overall a pretty simple yet entertaining box and I’m logging off for the evening feeling satisified.&lt;/p&gt;
+
+&lt;p&gt;I realized I keep capturing my mouse cursor in screenshots, so I’ll try to avoid that next time.&lt;/p&gt;</content><author><name>wittr</name></author><category term="writeups" /><category term="todo" /><summary type="html">Summary Blocky is a box that is meant to teach bad password practices, decompiling JAR files, and the perils of exposing internal files on public websites. I first enumerate with nmap to find SSH and HTTP open as well as some other ports that ended up not being paths to follow. I then enumerated the website’s directories in order to find some java code that exposed credentials. Those credentials were reused and were used to gain a foothold. Due to excessive privileges assigned to the normal user, I was able to easily escalate to root immediately after gaining a foothold. Walkthrough Enumeration As usual, I started with nmap to scan the machine. nmap -A -T4 -v -p1-30000 10.10.10.37 PORT STATE SERVICE VERSION 21/tcp open ftp ProFTPD 1.3.5a 22/tcp open ssh OpenSSH 7.2p2 Ubuntu 4ubuntu2.2 (Ubuntu Linux; protocol 2.0) 80/tcp open http Apache httpd 2.4.18 ((Ubuntu)) 8192/tcp closed sophos 25565/tcp open minecraft Minecraft 1.11.2 (Protocol: 127, Message: A Minecraft Server, Users: 0/20) FTP doesn’t have anonymous access allowed, so I decided to checkout the webserver. I ran gobuster against the site, looking for subdirectories. gobuster dir -u http://10.10.10.37 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt =============================================================== Gobuster v3.0.1 by OJ Reeves (@TheColonial) &amp;amp; Christian Mehlmauer (@_FireFart_) =============================================================== [+] Url: http://10.10.10.37 [+] Threads: 10 [+] Wordlist: /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt [+] Status codes: 200,204,301,302,307,401,403 [+] User Agent: gobuster/3.0.1 [+] Timeout: 10s =============================================================== 2020/07/13 22:11:18 Starting gobuster =============================================================== /wiki (Status: 301) /wp-content (Status: 301) /plugins (Status: 301) /wp-includes (Status: 301) /javascript (Status: 301) /wp-admin (Status: 301) /phpmyadmin (Status: 301) At about 40% I decided to stop the scan and look at what I found so far. In particular /plugins and /phpmyadmin caught my eye. Attempting defaults root/password or root/null on PHPMyAdmin did nothing so I looked at plugins instead. The /plugins page had a couple jar files listed that I could download. I ran strings against the jar files quick and found one of them seemed to have references to “my first plugin” so I figured this is the interesting one. I unzipped the jar file and went to open the com/myfirstplugin/BlockyCore.class file. It was clearly not plaintext so I ran strings BlockyCore.class and noticed a root user followed by its password on the next line: --snipped-- &amp;lt;init&amp;gt; Code localhost root 8YsqfCTnvxAUeduzjNSXe22 LineNumberTable LocalVariableTable --snipped-- I went back to the PHPMyAdmin console and saw the username / password combo worked. However, I like to double check my path with the official walkthroughs of HTB because time is limited for me. I noticed it alludes to using JD-GUI to decompile the plugin. So I decided to try this out and get the experience since I haven’t done it before. On my Kali box I looked for JD-GUI but didn’t see it. I did see JaDx-GUI available so I opened that and opened the jar file. Sure enough the credentials are hard-coded. After looking at the PHPMyAdmin console for a bit I saw there was a wordpress user named notch.</summary></entry><entry><title type="html">HackTheBox - Bashed</title><link href="http://localhost:4000/writeups/2020/07/08/HTB-Bashed.html" rel="alternate" type="text/html" title="HackTheBox - Bashed" /><published>2020-07-08T22:24:00-05:00</published><updated>2020-07-08T22:24:00-05:00</updated><id>http://localhost:4000/writeups/2020/07/08/HTB-Bashed</id><content type="html" xml:base="http://localhost:4000/writeups/2020/07/08/HTB-Bashed.html">&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Bashed/Bashed.png&quot; alt=&quot;Bashed&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
 

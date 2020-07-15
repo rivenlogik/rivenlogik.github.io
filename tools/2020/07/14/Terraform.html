@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<title>Terraform Notes | Active Denial System</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Below are notes I took a few months ago when doing a Udemy Terraform course. I may update them over time as I learn more. Terraform commands Plan Apply Destr...">
+<meta name="author" content="wittr">
+<meta name="generator" content="Jekyll v4.1.1">
+<link rel="canonical" href="http://localhost:4000/tools/2020/07/14/Terraform.html">
+
+<link rel="stylesheet" href="/assets/css/index.css">
+
+<link rel="stylesheet" href="/assets/css/classes.css">
+
+<link rel="alternate" href="/feed.xml" type="application/atom+xml" title="Active Denial System">
+
+
+
+
+<header class="icons">
+  
+    <a href="/" class="title">Active Denial System</a>
+  
+  
+    
+  <nav>
+  <a aria-label="Home" href="/" ><span aria-hidden="true" >Home</span></a>
+  <a aria-label="About" href="/about/" ><span aria-hidden="true" >About</span></a>
+  <a aria-label="Subjects" href="/subjects/" ><span aria-hidden="true" >Subjects</span></a>
+  <a aria-label="Archive" href="/archive/" ><span aria-hidden="true" >Archive</span></a>
+  
+  </nav>
+
+
+    
+  <nav>
+  <a aria-label="Twitter" href="https://twitter.com/rivenlogik" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#twitter"></use></svg></a>
+  <a aria-label="Github" href="https://github.com/rivenlogik" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#github"></use></svg></a>
+  <a aria-label="HackTheBox" href="https://www.hackthebox.eu/home/users/profile/33864" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#cube"></use></svg></a>
+  <a aria-label="Subscribe" href="/feed.xml" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#rss"></use></svg></a>
+  
+  </nav>
+
+
+  
+  
+</header>
+
+<article>
+  <header>
+  
+  <div class="categories">
+    
+    FILED UNDER:
+    
+    <a href="/subjects/#tools">TOOLS</a>
+    
+    
+  </div>
+  
+  <h1><a href="/tools/2020/07/14/Terraform.html">Terraform Notes</a></h1><time datetime="2020-07-14T22:39:05-05:00">July 14, 2020</time>
+</header>
+
+  <p><img src="data:image/png;base64,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" alt="Terraform" /></p>
+
+<p>Below are notes I took a few months ago when doing a Udemy Terraform course.  I may update them over time as I learn more.</p>
+
+<h2 id="terraform-commands">Terraform commands</h2>
+
+<ul>
+  <li>Plan</li>
+  <li>Apply</li>
+  <li>Destroy</li>
+</ul>
+
+<h3 id="plan">Plan</h3>
+
+<p>Plan is used to preview changes to the infrastructure.<br />
+Use:  <code class="language-plaintext highlighter-rouge">terraform plan</code> for output stdin, or in practice <code class="language-plaintext highlighter-rouge">teraform plan -out &lt;file&gt;</code><br />
+The file is used in apply.</p>
+
+<h3 id="apply">Apply</h3>
+
+<p>Makes changes to the infrastructure.</p>
+
+<h3 id="destroy">Destroy</h3>
+
+<p>Removes all infrastucture defined in plan files.  Be careful in production!</p>
+
+<h2 id="terraform-state">Terraform State</h2>
+
+<p>Terraform keeps the remote state of the infrastructure.</p>
+
+<p>It stores it in a file called <code class="language-plaintext highlighter-rouge">terraform.tfstate</code>.  There’s also a backup of the previous state (.backup).</p>
+
+<p>If you run terraform apply after terminating an instance (or any defined node etc.) manually, Terraform will re-create it if it is part of the configuration.</p>
+
+<p>The state file can be put into version control to see history of the infrastructure (JSON file). Allows for collaboration (beware of conflicts).</p>
+
+<p>Large projects require storage of state in a remote repository.</p>
+
+<p>Best not to have giant state files.</p>
+
+<h3 id="remote-storage">Remote Storage</h3>
+
+<p>This is called the <em>backend</em>.</p>
+
+<ul>
+  <li>S3</li>
+  <li>Consul</li>
+  <li>Terraform enterprise</li>
+</ul>
+
+<h4 id="benefits">Benefits</h4>
+
+<ul>
+  <li>Allows for collaboration, always available to the whole team.</li>
+  <li>Sensitive information is not stored locally.</li>
+  <li><em>Enhanced backends</em> allow for remote operations.</li>
+  <li>Avoid having to push the terraform.tfstate to version control.</li>
+</ul>
+
+<h4 id="cautions">Cautions</h4>
+
+<ul>
+  <li>Not all remote stores support <em>locking</em>.  S3 and Consul do.</li>
+</ul>
+
+<h3 id="example-configuration">Example Configuration</h3>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">terraform</span> <span class="p">{</span>
+    <span class="nx">backend</span> <span class="s2">"s3"</span> <span class="p">{</span>
+        <span class="nx">bucket</span> <span class="p">=</span> <span class="s2">"bucket"</span>
+        <span class="nx">key</span> <span class="p">=</span> <span class="s2">"terraform/myproject"</span>
+        <span class="nx">region</span> <span class="p">=</span> <span class="s2">"us-west-1"</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="other-state-information">Other State Information</h3>
+
+<p>You can also specify a read-only remote store directly in <code class="language-plaintext highlighter-rouge">.tf</code> files.  These are called a <em>datasource</em>.</p>
+
+<h2 id="terraform-variables">Terraform Variables</h2>
+
+<p>Terraform variables were completely re-worked in 0.12 release.</p>
+
+<h3 id="simple-types">Simple Types</h3>
+
+<ul>
+  <li>String</li>
+  <li>Number</li>
+  <li>Bool</li>
+</ul>
+
+<h3 id="complex-types">Complex Types</h3>
+
+<ul>
+  <li>List</li>
+  <li>Set</li>
+  <li>Map</li>
+  <li>Object</li>
+  <li>Tuple</li>
+</ul>
+
+<h4 id="list">List</h4>
+
+<p>Lists are always ordered.</p>
+
+<p>Referencing: <code class="language-plaintext highlighter-rouge">myvar[0]</code> index number</p>
+
+<h4 id="set">Set</h4>
+
+<p>Like a list, but always unique values and does not maintain order, ie. <code class="language-plaintext highlighter-rouge">[5,1,2,2,5] == [1,2,5]</code></p>
+
+<h4 id="map">Map</h4>
+
+<p>Like a dictionary (key/value).<br />
+Referencing: <code class="language-plaintext highlighter-rouge">myvar['key']</code></p>
+
+<h4 id="object">Object</h4>
+
+<p>Like a map, but each element can have a different type. First is string, second is number.</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>  
+<span class="nx">firstname</span> <span class="p">=</span> <span class="s2">"Bob"</span>
+<span class="nx">housenumber</span> <span class="p">=</span> <span class="mi">100</span>  
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="tuple">Tuple</h4>
+
+<p>Like a list, but each element can have a different type.  First is string, second is boolean, third is number.<br />
+ie. <code class="language-plaintext highlighter-rouge">["test", false, 0]</code></p>
+
+<h3 id="other-variable-notes">Other Variable Notes</h3>
+
+<ul>
+  <li>Variables that are declared in <code class="language-plaintext highlighter-rouge">vars.tf</code> but not defined will need to be defined in the <code class="language-plaintext highlighter-rouge">terraform.tfvars</code> file.</li>
+  <li>Best practice to NOT commit .tfvars files to repositories.</li>
+</ul>
+
+  
+</article>
+
+
+  <footer class="related">
+    <div class="previous"><span>Previous Post</span><a href="/writeups/todo/2020/07/14/HTB-Blocky.html">HackTheBox - Blocky</a></div>
+    <div class="next"></div>
+  </footer>
+
+
+
+</html>
