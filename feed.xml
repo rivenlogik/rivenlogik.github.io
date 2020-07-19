@@ -1,4 +1,141 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="en" /><updated>2020-07-14T22:39:05-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Active Denial System</title><subtitle></subtitle><author><name>wittr</name></author><entry><title type="html">HackTheBox - Blocky</title><link href="http://localhost:4000/writeups/todo/2020/07/14/HTB-Blocky.html" rel="alternate" type="text/html" title="HackTheBox - Blocky" /><published>2020-07-14T00:05:00-05:00</published><updated>2020-07-14T00:05:00-05:00</updated><id>http://localhost:4000/writeups/todo/2020/07/14/HTB-Blocky</id><content type="html" xml:base="http://localhost:4000/writeups/todo/2020/07/14/HTB-Blocky.html">&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Blocky/Blocky.png&quot; alt=&quot;Blocky&quot; /&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="en" /><updated>2020-07-16T22:56:57-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Active Denial System</title><subtitle></subtitle><author><name>wittr</name></author><entry><title type="html">Terraform Notes</title><link href="http://localhost:4000/tools/2020/07/14/Terraform-notes.html" rel="alternate" type="text/html" title="Terraform Notes" /><published>2020-07-14T22:42:00-05:00</published><updated>2020-07-14T22:42:00-05:00</updated><id>http://localhost:4000/tools/2020/07/14/Terraform-notes</id><content type="html" xml:base="http://localhost:4000/tools/2020/07/14/Terraform-notes.html">&lt;p&gt;&lt;img src=&quot;data:image/png;base64,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&quot; alt=&quot;Terraform&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Below are notes I took a few months ago when doing a Udemy Terraform course.  I may update them over time as I learn more.&lt;/p&gt;
+
+&lt;h2 id=&quot;terraform-commands&quot;&gt;Terraform commands&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Plan&lt;/li&gt;
+  &lt;li&gt;Apply&lt;/li&gt;
+  &lt;li&gt;Destroy&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;plan&quot;&gt;Plan&lt;/h3&gt;
+
+&lt;p&gt;Plan is used to preview changes to the infrastructure.&lt;br /&gt;
+Use:  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;terraform plan&lt;/code&gt; for output stdin, or in practice &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;teraform plan -out &amp;lt;file&amp;gt;&lt;/code&gt;&lt;br /&gt;
+The file is used in apply.&lt;/p&gt;
+
+&lt;h3 id=&quot;apply&quot;&gt;Apply&lt;/h3&gt;
+
+&lt;p&gt;Makes changes to the infrastructure.&lt;/p&gt;
+
+&lt;h3 id=&quot;destroy&quot;&gt;Destroy&lt;/h3&gt;
+
+&lt;p&gt;Removes all infrastucture defined in plan files.  Be careful in production!&lt;/p&gt;
+
+&lt;h2 id=&quot;terraform-state&quot;&gt;Terraform State&lt;/h2&gt;
+
+&lt;p&gt;Terraform keeps the remote state of the infrastructure.&lt;/p&gt;
+
+&lt;p&gt;It stores it in a file called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;terraform.tfstate&lt;/code&gt;.  There’s also a backup of the previous state (.backup).&lt;/p&gt;
+
+&lt;p&gt;If you run terraform apply after terminating an instance (or any defined node etc.) manually, Terraform will re-create it if it is part of the configuration.&lt;/p&gt;
+
+&lt;p&gt;The state file can be put into version control to see history of the infrastructure (JSON file). Allows for collaboration (beware of conflicts).&lt;/p&gt;
+
+&lt;p&gt;Large projects require storage of state in a remote repository.&lt;/p&gt;
+
+&lt;p&gt;Best not to have giant state files.&lt;/p&gt;
+
+&lt;h3 id=&quot;remote-storage&quot;&gt;Remote Storage&lt;/h3&gt;
+
+&lt;p&gt;This is called the &lt;em&gt;backend&lt;/em&gt;.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;S3&lt;/li&gt;
+  &lt;li&gt;Consul&lt;/li&gt;
+  &lt;li&gt;Terraform enterprise&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;benefits&quot;&gt;Benefits&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Allows for collaboration, always available to the whole team.&lt;/li&gt;
+  &lt;li&gt;Sensitive information is not stored locally.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Enhanced backends&lt;/em&gt; allow for remote operations.&lt;/li&gt;
+  &lt;li&gt;Avoid having to push the terraform.tfstate to version control.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;cautions&quot;&gt;Cautions&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Not all remote stores support &lt;em&gt;locking&lt;/em&gt;.  S3 and Consul do.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;example-configuration&quot;&gt;Example Configuration&lt;/h3&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;terraform&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;backend&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s3&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;bucket&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;bucket&quot;&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;terraform/myproject&quot;&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;region&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;us-west-1&quot;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;other-state-information&quot;&gt;Other State Information&lt;/h3&gt;
+
+&lt;p&gt;You can also specify a read-only remote store directly in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.tf&lt;/code&gt; files.  These are called a &lt;em&gt;datasource&lt;/em&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;terraform-variables&quot;&gt;Terraform Variables&lt;/h2&gt;
+
+&lt;p&gt;Terraform variables were completely re-worked in 0.12 release.&lt;/p&gt;
+
+&lt;h3 id=&quot;simple-types&quot;&gt;Simple Types&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;String&lt;/li&gt;
+  &lt;li&gt;Number&lt;/li&gt;
+  &lt;li&gt;Bool&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;complex-types&quot;&gt;Complex Types&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;List&lt;/li&gt;
+  &lt;li&gt;Set&lt;/li&gt;
+  &lt;li&gt;Map&lt;/li&gt;
+  &lt;li&gt;Object&lt;/li&gt;
+  &lt;li&gt;Tuple&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;list&quot;&gt;List&lt;/h4&gt;
+
+&lt;p&gt;Lists are always ordered.&lt;/p&gt;
+
+&lt;p&gt;Referencing: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;myvar[0]&lt;/code&gt; index number&lt;/p&gt;
+
+&lt;h4 id=&quot;set&quot;&gt;Set&lt;/h4&gt;
+
+&lt;p&gt;Like a list, but always unique values and does not maintain order, ie. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[5,1,2,2,5] == [1,2,5]&lt;/code&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;map&quot;&gt;Map&lt;/h4&gt;
+
+&lt;p&gt;Like a dictionary (key/value).&lt;br /&gt;
+Referencing: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;myvar['key']&lt;/code&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;object&quot;&gt;Object&lt;/h4&gt;
+
+&lt;p&gt;Like a map, but each element can have a different type. First is string, second is number.&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;  
+&lt;span class=&quot;nx&quot;&gt;firstname&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Bob&quot;&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;housenumber&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;  
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;tuple&quot;&gt;Tuple&lt;/h4&gt;
+
+&lt;p&gt;Like a list, but each element can have a different type.  First is string, second is boolean, third is number.&lt;br /&gt;
+ie. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[&quot;test&quot;, false, 0]&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;other-variable-notes&quot;&gt;Other Variable Notes&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Variables that are declared in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vars.tf&lt;/code&gt; but not defined will need to be defined in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;terraform.tfvars&lt;/code&gt; file.&lt;/li&gt;
+  &lt;li&gt;Best practice to NOT commit .tfvars files to repositories.&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>wittr</name></author><category term="tools" /><summary type="html">Below are notes I took a few months ago when doing a Udemy Terraform course. I may update them over time as I learn more. Terraform commands Plan Apply Destroy Plan Plan is used to preview changes to the infrastructure. Use: terraform plan for output stdin, or in practice teraform plan -out &amp;lt;file&amp;gt; The file is used in apply. Apply Makes changes to the infrastructure. Destroy Removes all infrastucture defined in plan files. Be careful in production! Terraform State Terraform keeps the remote state of the infrastructure. It stores it in a file called terraform.tfstate. There’s also a backup of the previous state (.backup). If you run terraform apply after terminating an instance (or any defined node etc.) manually, Terraform will re-create it if it is part of the configuration. The state file can be put into version control to see history of the infrastructure (JSON file). Allows for collaboration (beware of conflicts). Large projects require storage of state in a remote repository. Best not to have giant state files. Remote Storage This is called the backend. S3 Consul Terraform enterprise Benefits Allows for collaboration, always available to the whole team. Sensitive information is not stored locally. Enhanced backends allow for remote operations. Avoid having to push the terraform.tfstate to version control. Cautions Not all remote stores support locking. S3 and Consul do. Example Configuration terraform { backend &quot;s3&quot; { bucket = &quot;bucket&quot; key = &quot;terraform/myproject&quot; region = &quot;us-west-1&quot; } } Other State Information You can also specify a read-only remote store directly in .tf files. These are called a datasource. Terraform Variables Terraform variables were completely re-worked in 0.12 release. Simple Types String Number Bool Complex Types List Set Map Object Tuple List Lists are always ordered. Referencing: myvar[0] index number Set Like a list, but always unique values and does not maintain order, ie. [5,1,2,2,5] == [1,2,5] Map Like a dictionary (key/value). Referencing: myvar['key'] Object Like a map, but each element can have a different type. First is string, second is number. { firstname = &quot;Bob&quot; housenumber = 100 } Tuple Like a list, but each element can have a different type. First is string, second is boolean, third is number. ie. [&quot;test&quot;, false, 0] Other Variable Notes Variables that are declared in vars.tf but not defined will need to be defined in the terraform.tfvars file. Best practice to NOT commit .tfvars files to repositories.</summary></entry><entry><title type="html">HackTheBox - Blocky</title><link href="http://localhost:4000/writeups/todo/2020/07/14/HTB-Blocky.html" rel="alternate" type="text/html" title="HackTheBox - Blocky" /><published>2020-07-14T00:05:00-05:00</published><updated>2020-07-14T00:05:00-05:00</updated><id>http://localhost:4000/writeups/todo/2020/07/14/HTB-Blocky</id><content type="html" xml:base="http://localhost:4000/writeups/todo/2020/07/14/HTB-Blocky.html">&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Blocky/Blocky.png&quot; alt=&quot;Blocky&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
 

